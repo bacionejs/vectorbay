@@ -1,0 +1,361 @@
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<script>
+
+onload = () => {
+let {floor,ceil,random,PI,abs,atan2,min,hypot,round}=Math;
+let W=innerWidth;
+function element(e,p){return(p||document.body).appendChild(document.createElement(e))}
+
+let title=element("h4");
+title.textContent="VectorBay: a hanger for building vector spaceships";
+
+let canvas=element("canvas");
+canvas.width=W-20;canvas.height=W-20;
+canvas.style.border="1px solid black";canvas.style.marginTop="10px";
+canvas.style.touchAction="none";
+
+let controls=element("div");
+controls.className="controls";
+
+let label=element("label",controls);
+label.textContent="Grid: ";label.style.display="block";
+
+let slider=element("input",label);
+slider.type="range";slider.min=10;slider.max=40;slider.value=20;slider.step=2;
+
+let sliderValue=element("span",label);
+sliderValue.textContent=" 20";
+
+let openBtn=element("button",controls);openBtn.textContent="Open";
+let undoBtn=element("button",controls);undoBtn.textContent="Undo";
+let clearBtn=element("button",controls);clearBtn.textContent="Clear";
+let editBtn=element("button",controls);editBtn.textContent="Edit";
+let mirrorBtn=element("button",controls);mirrorBtn.textContent="Mirror";
+
+let fileInput=element("input",controls);
+fileInput.type="file";fileInput.accept="image/*";fileInput.style.display="none";
+
+let outputWrap=element("div");
+outputWrap.style.display="flex";outputWrap.style.alignItems="flex-start";outputWrap.style.marginTop="10px";outputWrap.style.gap="8px";
+
+let output=element("textarea",outputWrap);
+output.style.width="400px";output.style.height="100px";
+
+let btnCol=element("div",outputWrap);
+btnCol.style.display="flex";btnCol.style.flexDirection="column";btnCol.style.gap="4px";
+
+let copyBtn=element("button",btnCol);copyBtn.textContent="Copy";
+let pasteBtn=element("button",btnCol);pasteBtn.textContent="Paste";
+
+
+
+//let fun=element("span");
+//fun.style.fontSize=6;
+pretty(`HELPER FUNCTION:
+function shape(array,gridsize=1,mirror=true){
+let p=new Path2D;
+for(let i of array){for(let x of mirror?[1,-1]:[1]){p.moveTo(x*i[0]/gridsize,i[1]/gridsize);
+  for(let j=2;j<i.length;j+=2)p.lineTo(x*i[j]/gridsize,i[j+1]/gridsize);
+}}
+return p;
+}`);
+
+function pretty(s){
+let c=(s,color,match)=>s.replace(RegExp(`(${match})`,'g'),`<span style=color:${color}>$1</span>`);
+s=s.replace(/</g,'&'+'lt;');
+s=c(s,"purple",`[(){}[\\]]`);
+s=c(s,"teal",`\\b(function|let|if|else|for|forEach|while|true|false|this|return|undefined)\\b`);
+
+let e=element("div");
+e.innerHTML=s;
+
+e.style.cssText="font-family:monospace;height:100%;width:100%;background-color:white;touch-action:pan-x pan-y;padding:2ch;white-space:pre;overflow:auto;font-size:8;";
+function element(e){ return document.body.appendChild(document.createElement(e)); }
+}
+
+
+pasteBtn.onclick=async()=>{
+try{
+let text=await navigator.clipboard.readText();
+output.value=text;
+output.dispatchEvent(new Event("paste"));
+}catch(e){
+alert("Paste button failed. Use system paste instead.");
+}};
+
+output.addEventListener("paste",()=>{
+setTimeout(()=>{
+let text=output.value;
+let nums=text.match(/-?\d+/g)?.map(Number);
+if(!nums||nums.length%2!==0){
+alert("Pasted text must be an even-length list of numbers.");
+return;
+}
+let offset=gridLines/2;
+pathPoints=[];
+for(let i=0;i<nums.length;i+=2){
+let x=nums[i]+offset;
+let y=nums[i+1]+offset;
+pathPoints.push([x,y]);
+}
+updateSliderState();
+updateButtonStates();
+drawGrid();
+updateOutput();
+},0);
+});
+
+let ctx=canvas.getContext("2d");
+let gridLines=parseInt(slider.value);
+let pathPoints=[];
+let backgroundImage=null;
+let imgScale=1,imgOffsetX=0,imgOffsetY=0;
+let mirrorMode=false;
+let editMode=false;
+let dragPointIndex=-1;
+let lastTouches=[],dragging=false;
+
+function updateButtonStates(){
+let hasPoints=pathPoints.length>0;
+undoBtn.disabled=!hasPoints||editMode||mirrorMode;
+clearBtn.disabled=!hasPoints||editMode||mirrorMode;
+editBtn.disabled=!hasPoints||mirrorMode;
+mirrorBtn.disabled=!hasPoints;
+copyBtn.disabled=!hasPoints;
+}
+
+function updateSliderState(){
+slider.disabled=pathPoints.length>0||mirrorMode;
+}
+
+function drawGrid(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+if(backgroundImage){
+ctx.save();
+ctx.translate(imgOffsetX,imgOffsetY);
+ctx.scale(imgScale,imgScale);
+ctx.drawImage(backgroundImage,0,0);
+ctx.restore();
+}
+let step=canvas.width/gridLines;
+ctx.strokeStyle="#ccc";
+ctx.beginPath();
+for(let i=0;i<=gridLines;i++){
+let pos=i*step;
+ctx.moveTo(pos,0);ctx.lineTo(pos,canvas.height);
+ctx.moveTo(0,pos);ctx.lineTo(canvas.width,pos);
+}
+ctx.stroke();
+
+ctx.strokeStyle="red";
+ctx.beginPath();
+let mid=canvas.width/2;
+ctx.moveTo(mid,0);ctx.lineTo(mid,canvas.height);
+ctx.moveTo(0,mid);ctx.lineTo(canvas.width,mid);
+ctx.stroke();
+
+ctx.strokeStyle="blue";ctx.lineWidth=2;
+ctx.beginPath();
+let points=mirrorMode?[...pathPoints,...pathPoints.map(([x,y])=>[gridLines-x,y]).reverse()]:pathPoints;
+for(let i=0;i<points.length;i++){
+let [gx,gy]=points[i];
+let x=gx*step;let y=gy*step;
+if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+}
+ctx.stroke();
+
+ctx.fillStyle="red";
+for(let [gx,gy] of points){
+let x=gx*step;let y=gy*step;
+ctx.beginPath();
+ctx.arc(x,y,4,0,PI*2);
+ctx.fill();
+}
+if(mirrorMode){
+ctx.fillStyle="rgba(0,255,0,0.1)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+}}
+
+function updateOutput(){
+let all=mirrorMode?[...pathPoints,...pathPoints.map(([x,y])=>[gridLines-x,y]).reverse()]:pathPoints;
+let offset=gridLines/2;
+output.value="["+all.map(([x,y])=>[x-offset,y-offset]).flat().map(v=>round(v)).join(", ")+"]";
+updateButtonStates();
+}
+
+slider.oninput=()=>{
+gridLines=parseInt(slider.value);
+sliderValue.textContent=" "+gridLines;
+pathPoints=[];
+updateSliderState();
+updateButtonStates();
+updateOutput();
+drawGrid();
+};
+
+canvas.addEventListener("click",e=>{
+if(mirrorMode||editMode)return;
+let rect=canvas.getBoundingClientRect();
+let mx=e.clientX-rect.left;
+let my=e.clientY-rect.top;
+let step=canvas.width/gridLines;
+let gx=round(mx/step);
+let gy=round(my/step);
+pathPoints.push([gx,gy]);
+updateSliderState();
+updateButtonStates();
+updateOutput();
+drawGrid();
+});
+
+undoBtn.onclick=()=>{
+if(mirrorMode||editMode)return;
+pathPoints.pop();
+updateSliderState();
+updateButtonStates();
+updateOutput();
+drawGrid();
+};
+
+clearBtn.onclick=()=>{
+if(mirrorMode||editMode)return;
+pathPoints=[];
+updateSliderState();
+updateButtonStates();
+updateOutput();
+drawGrid();
+};
+
+copyBtn.onclick=()=>{
+output.select();
+document.execCommand("copy");
+};
+
+openBtn.onclick=()=>{
+if(mirrorMode)return;
+fileInput.click();
+};
+
+fileInput.onchange=e=>{
+let file=e.target.files[0];
+if(!file)return;
+let reader=new FileReader();
+reader.onload=evt=>{
+let img=new Image();
+img.onload=()=>{
+backgroundImage=img;
+imgScale=1;
+imgOffsetX=0;
+imgOffsetY=0;
+drawGrid();
+};
+img.src=evt.target.result;
+};
+reader.readAsDataURL(file);
+};
+
+canvas.addEventListener("touchstart",e=>{
+if(mirrorMode||!editMode)return;
+if(e.touches.length===1){
+let rect=canvas.getBoundingClientRect();
+let mx=e.touches[0].clientX-rect.left;
+let my=e.touches[0].clientY-rect.top;
+let step=canvas.width/gridLines;
+let gx=mx/step;
+let gy=my/step;
+let bestDist=0.4;
+dragPointIndex=-1;
+for(let i=0;i<pathPoints.length;i++){
+let [x,y]=pathPoints[i];
+let dx=x-gx,dy=y-gy;
+let dist=hypot(dx,dy);
+if(dist<bestDist){
+bestDist=dist;
+dragPointIndex=i;
+}}}});
+
+canvas.addEventListener("touchmove",e=>{
+if(mirrorMode||!editMode)return;
+e.preventDefault();
+if(e.touches.length===1&&dragPointIndex!==-1){
+let rect=canvas.getBoundingClientRect();
+let mx=e.touches[0].clientX-rect.left;
+let my=e.touches[0].clientY-rect.top;
+let step=canvas.width/gridLines;
+let gx=round(mx/step);
+let gy=round(my/step);
+pathPoints[dragPointIndex]=[gx,gy];
+drawGrid();
+updateOutput();
+}},{passive:false});
+
+canvas.addEventListener("touchend",()=>{
+if(mirrorMode||!editMode)return;
+dragPointIndex=-1;
+});
+
+mirrorBtn.onclick=()=>{
+mirrorMode=!mirrorMode;
+mirrorBtn.textContent=mirrorMode?"Unmirror":"Mirror";
+slider.disabled=mirrorMode||pathPoints.length>0;
+openBtn.disabled=mirrorMode||editMode;
+undoBtn.disabled=mirrorMode||editMode;
+clearBtn.disabled=mirrorMode||editMode;
+fileInput.disabled=mirrorMode;
+editBtn.disabled=mirrorMode;
+drawGrid();
+updateOutput();
+};
+
+editBtn.onclick=()=>{
+editMode=!editMode;
+openBtn.disabled=editMode;
+undoBtn.disabled=editMode;
+clearBtn.disabled=editMode;
+editBtn.textContent=editMode?"Stop Editing":"Edit";
+updateButtonStates();
+};
+
+canvas.addEventListener("touchstart",e=>{
+if(editMode||mirrorMode)return;
+lastTouches=[...e.touches];
+if(e.touches.length===1)dragging=true;
+});
+
+canvas.addEventListener("touchmove",e=>{
+if(editMode||mirrorMode)return;
+if(e.touches.length===2&&lastTouches.length===2){
+let [t1,t2]=e.touches;
+let [p1,p2]=lastTouches;
+let d0=hypot(p2.clientX-p1.clientX,p2.clientY-p1.clientY);
+let d1=hypot(t2.clientX-t1.clientX,t2.clientY-t1.clientY);
+let s=d1/d0;
+let rect=canvas.getBoundingClientRect();
+let cx=(t1.clientX+t2.clientX)/2-rect.left;
+let cy=(t1.clientY+t2.clientY)/2-rect.top;
+imgOffsetX=cx-s*(cx-imgOffsetX);
+imgOffsetY=cy-s*(cy-imgOffsetY);
+imgScale*=s;
+lastTouches=[...e.touches];
+drawGrid();
+}else if(e.touches.length===1&&dragging){
+let dx=e.touches[0].clientX-lastTouches[0].clientX;
+let dy=e.touches[0].clientY-lastTouches[0].clientY;
+imgOffsetX+=dx;
+imgOffsetY+=dy;
+lastTouches=[...e.touches];
+drawGrid();
+}},{passive:false});
+
+canvas.addEventListener("touchend",e=>{
+if(editMode||mirrorMode)return;
+if(e.touches.length===0)dragging=false;
+lastTouches=[...e.touches];
+});
+
+drawGrid();
+updateButtonStates();
+};
+
+</script>
