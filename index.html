@@ -48,12 +48,8 @@ btnCol.style.display="flex";btnCol.style.flexDirection="column";btnCol.style.gap
 let copyBtn=element("button",btnCol);copyBtn.textContent="Copy";
 let pasteBtn=element("button",btnCol);pasteBtn.textContent="Paste";
 
-
-
-//let fun=element("span");
-//fun.style.fontSize=6;
 pretty(`HELPER FUNCTION:
-function shape(array,gridsize=1,mirror=true){
+function shape(array,gridsize=20,mirror=true){
 let p=new Path2D;
 for(let i of array){for(let x of mirror?[1,-1]:[1]){p.moveTo(x*i[0]/gridsize,i[1]/gridsize);
   for(let j=2;j<i.length;j+=2)p.lineTo(x*i[j]/gridsize,i[j+1]/gridsize);
@@ -66,14 +62,11 @@ let c=(s,color,match)=>s.replace(RegExp(`(${match})`,'g'),`<span style=color:${c
 s=s.replace(/</g,'&'+'lt;');
 s=c(s,"purple",`[(){}[\\]]`);
 s=c(s,"teal",`\\b(function|let|if|else|for|forEach|while|true|false|this|return|undefined)\\b`);
-
 let e=element("div");
 e.innerHTML=s;
-
 e.style.cssText="font-family:monospace;height:100%;width:100%;background-color:white;touch-action:pan-x pan-y;padding:2ch;white-space:pre;overflow:auto;font-size:8;";
 function element(e){ return document.body.appendChild(document.createElement(e)); }
 }
-
 
 pasteBtn.onclick=async()=>{
 try{
