@@ -1,6 +1,6 @@
 ## 🚀 DEMO
 
-[![VectorBay screenshot](./README.jpg)](https://bacionejs.github.io/vectorbay/)
+[![VectorBay screenshot](https://raw.githubusercontent.com/bacionejs/vectorbay/main/README.jpg)](https://bacionejs.github.io/vectorbay/)
 
 # 🚀 VectorBay
 
