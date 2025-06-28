@@ -79,13 +79,13 @@ function shape(array, gridsize = 1, mirror = true) {
 
 ```js
 // Simple mirrored ship
-ctx.fill(shape([0, -3, 2, 0, 0, 0], 20, true));
+ctx.fill(shape([0, -3, 2, 0, 0, 0], 3, true));
 
 // Multi-shape ship with engine flame
 ctx.fill(shape([
   [0, -3, 2, 0, 0, 0],     // body
   [0, 1, 1, 1, 0, 2]       // flame
-], 20, true));
+], 5, true));
 ```
 
 > ✅ You can scale, rotate, and translate the result using `ctx.save()`, `ctx.translate()`, `ctx.rotate()`, `ctx.scale()` — then `ctx.fill()` your shape.
