@@ -1,42 +1,61 @@
-## **VectorBay**  
-*A hangar for building your spaceships.*
+## 🚀 DEMO
 
-**VectorBay** is a minimalist vector drawing tool for designing symmetrical spaceships with precision and ease. Most vector apps are either too complex or too limited. VectorBay aims to hit the sweet spot: fast, focused, and built with game dev in mind.
+[![VectorBay screenshot](./README.jpg)](https://bacionejs.github.io/vectorbay/)
+
+# 🚀 VectorBay
+
+*A hangar for building vector spaceships.*
+
+**VectorBay** is a minimalist vector editor made for game developers. It’s especially designed to help you draw symmetrical spaceships using clean, simple point arrays — perfect for procedural games, 2D shooters, or anything needing scalable geometry.
+
+While most vector tools are either too bloated or too basic, VectorBay hits the sweet spot: fast, focused, and mobile-friendly.
 
 ---
 
-### 🔧 Features
+## ✨ Features
 
+### 🛠 Drawing Tools
 - **Grid Size Slider**  
-  Adjust the drawing resolution to suit the level of detail you need.
+  Choose your drawing resolution with a snap-to-grid layout.
+  
+- **Click-to-Draw**  
+  Just tap or click on the canvas to place points and build shapes.
 
-- **Open Image**  
-  Load a bitmap image as a background layer to trace over.
-
-- **Undo**  
-  Step back through your drawing history.
-
-- **Clear**  
-  Wipe the canvas clean and start from scratch.
-
-- **Copy & Paste**  
-  System clipboard support for easy transfer.
+- **Undo / Clear**  
+  Step back or wipe the canvas clean anytime.
 
 - **Edit Mode**  
-  Select and reposition existing points.
+  Reposition existing points by dragging them (touch-supported).
 
-- **Mirror**  
-  Automatically mirror points for symmetrical spaceship designs. Choose full symmetry or mirror just one side.
+- **Mirror Mode**  
+  Draw just one half — VectorBay reflects it live. Perfect for symmetric ships.
 
-- **Helper Function**  
-  Convert your vector array to canvas-friendly paths.  
-  Includes a sample usage pattern for drawing with `CanvasRenderingContext2D`.
+### 📎 Input & Output
+- **Copy & Paste**  
+  Use the system clipboard to save or load your vector arrays.
+
+- **Paste Vector Code**  
+  Drop in an array like `[0,-3,2,0,0,0]` and see it render immediately.
+
+- **Exported Format**  
+  Outputs ready-to-use point arrays compatible with canvas rendering.
+
+### 🖼 Image Tracing
+- **Open Background Image**  
+  Load a bitmap as a reference image.
+
+- **Pinch Zoom & Pan**  
+  Use two fingers (or mouse) to scale and position the image.
+
+### 📱 Touch Support
+- Fully usable on phones and tablets  
+  (drag, tap, pinch, zoom — it all works!)
 
 ---
 
-### 🧰 Helper Function
+## 🧰 The `shape()` Helper Function
 
-This function converts your vector arrays into a `Path2D` object that can be rendered using `ctx.fill()` or `ctx.stroke()`.
+Use this to render VectorBay shapes in your game:
 
 ```js
 function shape(array, gridsize = 1, mirror = true) {
@@ -52,54 +71,73 @@ function shape(array, gridsize = 1, mirror = true) {
 }
 ```
 
-- `array`: An array of points (e.g., `[x1, y1, x2, y2, ...]`) or an array of such arrays.
-- `gridsize`: The **pixel size of one grid square** in VectorBay. This matches the value you selected using the Grid Size Slider.
-- `mirror`: If `true`, mirrors the shape across the vertical axis to create a full ship from a half design.
+- `array`: A flat point array like `[x, y, x, y, ...]` or a list of such arrays.
+- `gridsize`: The grid size used during editing — determines scaling.
+- `mirror`: Whether to reflect the shape across the vertical axis.
 
-#### 🔍 Usage Example — Basic Ship
+### 🔍 Usage Examples
 
 ```js
+// Simple mirrored ship
 ctx.fill(shape([0, -3, 2, 0, 0, 0], 20, true));
-```
 
-#### 🔍 Usage Example — Ship with Engine Flame
-
-```js
+// Multi-shape ship with engine flame
 ctx.fill(shape([
-  [0, -3, 2, 0, 0, 0],     // ship body
-  [0, 1, 1, 1, 0, 2]       // engine flame
+  [0, -3, 2, 0, 0, 0],     // body
+  [0, 1, 1, 1, 0, 2]       // flame
 ], 20, true));
 ```
 
-> ✅ **In Practice:** You can use `shape()` to define ships in vector space and apply `ctx.translate()`, `ctx.rotate()`, and `ctx.scale()` dynamically at draw time — for example, to rotate based on angle, or scale with health. This keeps your geometry clean and logic modular.
+> ✅ You can scale, rotate, and translate the result using `ctx.save()`, `ctx.translate()`, `ctx.rotate()`, `ctx.scale()` — then `ctx.fill()` your shape.
 
 ---
 
-### 💡 Why Half-Ships?
+## 🧠 Why Use Half-Ships?
 
-Designing **half-ships** is a powerful feature:
+Designing one half and letting the tool mirror it:
 
-- ✏️ **Easier to Edit**  
-  You only need to tweak one side of your design — changes automatically mirror to the other side.
+- 🔧 Makes editing faster and easier
+- 🧼 Keeps your point arrays cleaner
+- 📦 Saves space in code — great for jam-sized games
 
-- 🧠 **Cleaner Code**  
-  Mirroring keeps your shape arrays shorter and easier to maintain, especially for complex designs.
-
-- ⚠️ **Note on Asymmetry**  
-  If you're building **asymmetrical ships**, disable mirroring by setting `mirror` (a.k.a. `isHalfShip`) to `false`.  
-  In that case, you’ll need to draw the entire shape manually.
+For **asymmetrical ships**, simply disable Mirror mode or pass `mirror = false` to `shape()`.
 
 ---
 
-### ⚠️ Limitations
+## ⚠️ Limitations
 
 - **No Curves**  
-  Only straight-line polygonal shapes are supported.
+  All shapes are straight-line polygons.
 
-- **Single Shape Only**  
-  VectorBay currently only supports editing one shape at a time.  
+- **One Shape at a Time**  
+  You can only edit one shape in the app.  
   To use multiple shapes, create them individually and wrap them as sub-arrays:
 
 ```js
-let fullShip = [shape1, shape2, shape3];
+let ship = shape([ shape1, shape2, shape3 ], 20, true);
 ```
+
+- **Locked Controls**  
+  Some buttons (like Undo, Clear, Open) are disabled during Edit or Mirror mode for safety.
+
+---
+
+## 🎯 Tracing Workflow Tips
+
+If you're not confident in freehand drawing, VectorBay works great for tracing ships from the internet:
+
+1. **Find a reference image** of a spaceship with the shape you want.
+2. Use the **Open Image** button to load it into the canvas.
+3. **Pinch and zoom** the image to align it with the grid.
+4. Pick the **smallest grid size** that still captures the level of detail you want.
+5. **Draw only the major features** — don't trace every pixel. Simplify the form.
+6. Use **Mirror Mode** to cut your work in half and maintain symmetry.
+
+For most ships, a **grid size of 20** strikes a good balance between precision and simplicity.
+
+> You're not trying to recreate the ship exactly — you're distilling its shape into a clean, readable abstraction suitable for games.
+
+---
+
+Enjoy designing ships!  
+Feel free to open an issue or PR if you want to contribute or share examples.
