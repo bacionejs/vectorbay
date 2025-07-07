@@ -58,7 +58,7 @@ While most vector tools are either too bloated or too basic, VectorBay hits the 
 Use this to render VectorBay shapes in your game:
 
 ```js
-function shape(array, gridsize = 1, mirror = true) {
+function shape(array, gridsize = 20, mirror = true) {
   let p = new Path2D;
   for (let i of array) {
     for (let x of mirror ? [1, -1] : [1]) {
