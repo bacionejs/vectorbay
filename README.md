@@ -11,6 +11,8 @@
 
 While most vector tools are either too bloated or too basic, VectorBay hits the sweet spot: fast, focused, and mobile-friendly.
 
+Example game: https://github.com/bacionejs/byte-armada  
+
 ---
 
 ## ✨ Features
