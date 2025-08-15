@@ -1,6 +1,7 @@
-## 🚀 DEMO
+<h1><a href="https://bacionejs.github.io/vectorbay/" style="text-decoration: none; color: inherit;">Run</a></h1>
 
-[![VectorBay screenshot](https://raw.githubusercontent.com/bacionejs/vectorbay/main/README.jpg)](https://bacionejs.github.io/vectorbay/)
+[![Demo – Click to Play](README.jpg)](https://bacionejs.github.io/vectorbay/)
+
 
 # 🚀 VectorBay
 
