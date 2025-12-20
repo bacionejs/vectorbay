@@ -65,6 +65,10 @@ let timer=setInterval(()=>{
 };
 
 save.onclick=()=>{
+let flat=points.map(([x,y])=>[x-grid/2,y-grid/2]).flat().map(v=>round(v));
+let closed=flat.length>2 && flat[0]===0 && flat[flat.length-2]===0;
+if(!points.length) return alert("No data to export!");
+if(!closed) return alert("Shape must start and end on the red center line to close!");
 let data=text.value.replace(/[\[\]]/g,"");
 let h=`<script>onload=()=>{let c=document.body.appendChild(document.createElement("canvas"));c.width=c.height=400;c.style.border="2px solid silver";let x=c.getContext("2d"),p=[${data}];
 function shape(p){let h=new Path2D();for(let m of[1,-1]){h.moveTo(m*p[0],p[1]);for(let j=2;j<p.length;j+=2)h.lineTo(m*p[j],p[j+1]);}return h};x.translate(200,200);x.scale(20,20);
