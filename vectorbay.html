@@ -39,7 +39,7 @@ if(pathPoints.length>0){
   c.strokeStyle="#00bfff";c.lineWidth=2;c.stroke(p);c.restore()
 }
 c.fillStyle="#ff4444";
-for(let [gx,gy] of pathPoints){c.beginPath();c.arc(gx*step,gy*step,4,0,PI*2);c.fill()}
+for(let [x,y] of pathPoints){c.beginPath();c.arc(x*step,y*step,4,0,PI*2);c.fill()}
 text.value="["+flat.join(",")+"]";
 };
 
@@ -51,14 +51,9 @@ tut.disabled=true;
 hand.style.display="block";
 let i=0,step=canvas.width/gridLines;
 let timer=setInterval(()=>{
-  if(i>=seq.length){
-    clearInterval(timer);
-    tut.disabled=false;
-    setTimeout(()=>hand.style.display="none",500);
-    return;
-  }
-  let [gx,gy]=seq[i];
-  hand.style.left=(gx*step+canvas.offsetLeft-10)+"px";hand.style.top=(gy*step+canvas.offsetTop)+"px";
+  if(i>=seq.length){clearInterval(timer);tut.disabled=false;setTimeout(()=>hand.style.display="none",500);return;}
+  let [x,y]=seq[i];
+  hand.style.left=(x*step+canvas.offsetLeft-10)+"px";hand.style.top=(y*step+canvas.offsetTop)+"px";
   setTimeout(()=>{
     hand.style.transform="scale(0.7)";
     pathPoints.push(seq[i-1]);
