@@ -1,7 +1,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <script>
 onload=()=>{
-let{PI,round,min}=Math,gridLines=20,pathPoints=[];
+let{PI,round,min}=Math,grid=20,points=[];
 function element(tagName,parent=document.body,className=""){let e=document.createElement(tagName);if(className)e.className=className;parent.appendChild(e);return e;}
 
 element("style").textContent=`
@@ -25,38 +25,38 @@ save.textContent="Export";
 
 function draw(){
 c.clearRect(0,0,canvas.width,canvas.height);
-let step=canvas.width/gridLines,off=gridLines/2,mid=canvas.width/2;c.strokeStyle="#333";c.beginPath();
-for(let i=0;i<=gridLines;i++){c.moveTo(i*step,0);c.lineTo(i*step,canvas.height);c.moveTo(0,i*step);c.lineTo(canvas.width,i*step)};c.stroke();
+let step=canvas.width/grid,off=grid/2,mid=canvas.width/2;c.strokeStyle="#333";c.beginPath();
+for(let i=0;i<=grid;i++){c.moveTo(i*step,0);c.lineTo(i*step,canvas.height);c.moveTo(0,i*step);c.lineTo(canvas.width,i*step)};c.stroke();
 c.strokeStyle="#ff4444";c.beginPath();c.moveTo(mid,0);c.lineTo(mid,canvas.height);c.moveTo(0,mid);c.lineTo(canvas.width,mid);c.stroke();
-let flat=pathPoints.map(([x,y])=>[x-off,y-off]).flat().map(v=>round(v)),closed=flat.length>0&&flat[flat.length-2]===0;
-if(pathPoints.length>0){
+let flat=points.map(([x,y])=>[x-off,y-off]).flat().map(v=>round(v)),closed=flat.length>0&&flat[flat.length-2]===0;
+if(points.length>0){
   c.save();c.translate(mid,mid);let p=new Path2D();
   for(let m of [1,-1]){
-    p.moveTo(m*(pathPoints[0][0]-off)*step,(pathPoints[0][1]-off)*step);
-    for(let i=1;i<pathPoints.length;i++)p.lineTo(m*(pathPoints[i][0]-off)*step,(pathPoints[i][1]-off)*step);
+    p.moveTo(m*(points[0][0]-off)*step,(points[0][1]-off)*step);
+    for(let i=1;i<points.length;i++)p.lineTo(m*(points[i][0]-off)*step,(points[i][1]-off)*step);
   }
   if(closed){c.fillStyle="rgba(0, 150, 255, 0.3)";c.fill(p)}
   c.strokeStyle="#00bfff";c.lineWidth=2;c.stroke(p);c.restore()
 }
 c.fillStyle="#ff4444";
-for(let [x,y] of pathPoints){c.beginPath();c.arc(x*step,y*step,4,0,PI*2);c.fill()}
+for(let [x,y] of points){c.beginPath();c.arc(x*step,y*step,4,0,PI*2);c.fill()}
 text.value="["+flat.join(",")+"]";
 };
 
 tut.onclick=()=>{
-pathPoints=[];
-let off=gridLines/2; let seq=[]; let raw=[0,-10,2,-1,3,1,3,-2,5,-2,5,2,6,2,10,-1,9,5,3,10,3,7,2,6,2,7,0,7];
+points=[];
+let off=grid/2; let seq=[]; let raw=[0,-10,2,-1,3,1,3,-2,5,-2,5,2,6,2,10,-1,9,5,3,10,3,7,2,6,2,7,0,7];
 for(let i=0;i<raw.length;i+=2)seq.push([raw[i]+off,raw[i+1]+off]);
 tut.disabled=true;
 hand.style.display="block";
-let i=0,step=canvas.width/gridLines;
+let i=0,step=canvas.width/grid;
 let timer=setInterval(()=>{
   if(i>=seq.length){clearInterval(timer);tut.disabled=false;setTimeout(()=>hand.style.display="none",500);return;}
   let [x,y]=seq[i];
   hand.style.left=(x*step+canvas.offsetLeft-10)+"px";hand.style.top=(y*step+canvas.offsetTop)+"px";
   setTimeout(()=>{
     hand.style.transform="scale(0.7)";
-    pathPoints.push(seq[i-1]);
+    points.push(seq[i-1]);
     draw();
     setTimeout(()=>hand.style.transform="scale(1)",100);
   },250);
@@ -74,7 +74,7 @@ a.href=URL.createObjectURL(b);a.download="shape.html";a.click();
 }
 
 function resize(){let L=innerWidth>innerHeight,s=L?min(innerWidth*.6,innerHeight-40):min(innerWidth-40,innerHeight*.6);canvas.width=canvas.height=s;draw()};
-canvas.addEventListener("mousedown",e=>{let r=canvas.getBoundingClientRect(),s=canvas.width/gridLines;pathPoints.push([round((e.clientX-r.left)/s),round((e.clientY-r.top)/s)]);draw();});
-text.addEventListener("input",()=>{let n=text.value.match(/-?\d+/g)?.map(Number);if(!n||n.length%2!==0)return;pathPoints=[];let o=gridLines/2;for(let i=0;i<n.length;i+=2)pathPoints.push([n[i]+o,n[i+1]+o]);draw()});
+canvas.addEventListener("mousedown",e=>{let r=canvas.getBoundingClientRect(),s=canvas.width/grid;points.push([round((e.clientX-r.left)/s),round((e.clientY-r.top)/s)]);draw();});
+text.addEventListener("input",()=>{let n=text.value.match(/-?\d+/g)?.map(Number);if(!n||n.length%2!==0)return;points=[];let o=grid/2;for(let i=0;i<n.length;i+=2)points.push([n[i]+o,n[i+1]+o]);draw()});
 addEventListener("resize",resize);resize()};
 </script>
