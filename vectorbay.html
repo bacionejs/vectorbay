@@ -10,25 +10,22 @@ body{margin:0;padding:10px;background:#121212;color:#e0e0e0;font-family:sans-ser
 @media(orientation:landscape){.main{flex-direction:row;align-items:flex-start;height:90vh}.c{flex:1;display:flex;flex-direction:column;height:100%}}
 .canvas{border:1px solid #444;touch-action:none;background:#1e1e1e;border-radius:4px;cursor:crosshair}
 .text{width:100%;font-family:monospace;padding:8px;box-sizing:border-box;height:10em;background:#252525;color:#00ff00;border:1px solid #444;outline:none}
-.button{width:100%;padding:12px;cursor:pointer;font-weight:700;margin-top:5px;background:#333;color:#fff;border:1px solid #555;transition:0.2s}
-.button:hover{background:#444}
-.tut-btn{background:#0066cc;border-color:#0088ff}
-.tut-btn:hover{background:#0088ff}
+.button{width:100%;padding:12px;font-weight:700;margin-top:5px;background:#333;color:#fff;border:1px solid #555;}
+.tut{background:#0066cc;border-color:#0088ff}
 .hand{position:absolute;font-size:30px;pointer-events:none;transition:left 0.3s ease-out, top 0.3s ease-out, transform 0.1s;display:none;z-index:10}
 `;
 
 let main=element("div",document.body,"main"),canvas=element("canvas",main,"canvas"),ctrls=element("div",main,"c");
 let hand=element("div",main,"hand");
-let text=element("textarea",ctrls,"text"),tutBtn=element("button",ctrls,"button tut-btn"),save=element("button",ctrls,"button");
-hand.textContent="\u{1F446}";
-tutBtn.textContent="Tutorial";
-save.textContent="Export";
+let text=element("textarea",ctrls,"text"),tut=element("button",ctrls,"button tut"),save=element("button",ctrls,"button");
 let c=canvas.getContext("2d");
+hand.textContent="\u{1F446}";
+tut.textContent="Tutorial";
+save.textContent="Export";
 
 function draw(){
 c.clearRect(0,0,canvas.width,canvas.height);
-let step=canvas.width/gridLines,off=gridLines/2,mid=canvas.width/2;
-c.strokeStyle="#333";c.beginPath();
+let step=canvas.width/gridLines,off=gridLines/2,mid=canvas.width/2;c.strokeStyle="#333";c.beginPath();
 for(let i=0;i<=gridLines;i++){c.moveTo(i*step,0);c.lineTo(i*step,canvas.height);c.moveTo(0,i*step);c.lineTo(canvas.width,i*step)};c.stroke();
 c.strokeStyle="#ff4444";c.beginPath();c.moveTo(mid,0);c.lineTo(mid,canvas.height);c.moveTo(0,mid);c.lineTo(canvas.width,mid);c.stroke();
 let flat=pathPoints.map(([x,y])=>[x-off,y-off]).flat().map(v=>round(v)),closed=flat.length>0&&flat[flat.length-2]===0;
@@ -46,24 +43,22 @@ for(let [gx,gy] of pathPoints){c.beginPath();c.arc(gx*step,gy*step,4,0,PI*2);c.f
 text.value="["+flat.join(",")+"]";
 };
 
-tutBtn.onclick=()=>{
+tut.onclick=()=>{
 pathPoints=[];
 let off=gridLines/2; let seq=[]; let raw=[0,-10,2,-1,3,1,3,-2,5,-2,5,2,6,2,10,-1,9,5,3,10,3,7,2,6,2,7,0,7];
 for(let i=0;i<raw.length;i+=2)seq.push([raw[i]+off,raw[i+1]+off]);
-let i=0;
-tutBtn.disabled=true;
+tut.disabled=true;
 hand.style.display="block";
-let step=canvas.width/gridLines;
+let i=0,step=canvas.width/gridLines;
 let timer=setInterval(()=>{
   if(i>=seq.length){
     clearInterval(timer);
-    tutBtn.disabled=false;
+    tut.disabled=false;
     setTimeout(()=>hand.style.display="none",500);
     return;
   }
   let [gx,gy]=seq[i];
-  hand.style.left=(gx*step+canvas.offsetLeft-10)+"px";
-  hand.style.top=(gy*step+canvas.offsetTop)+"px";
+  hand.style.left=(gx*step+canvas.offsetLeft-10)+"px";hand.style.top=(gy*step+canvas.offsetTop)+"px";
   setTimeout(()=>{
     hand.style.transform="scale(0.7)";
     pathPoints.push(seq[i-1]);
