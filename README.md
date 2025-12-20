@@ -21,3 +21,5 @@ VectorBay is a mobile-centric vector editor for game graphics.
 - Import: paste vector array
 - Export: a working html page
 
+---
+
