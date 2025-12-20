@@ -13,13 +13,15 @@ VectorBay is a mobile-centric vector editor for game graphics.
 
 ---
 
-</details><details><summary>Features</summary>
+<details><summary>Features</summary>
 
 - Grid editing: add
 - Text editing: add, insert, delete, move, clear
 - Mirror: halves the effort and size for symetrical shapes
 - Import: paste vector array
 - Export: a working html page
+
+</details>
 
 ---
 
