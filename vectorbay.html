@@ -72,7 +72,7 @@ let timer=setInterval(()=>{
   setTimeout(()=>{
     hand.style.transform="scale(0.7)";
     points.push(pt); 
-    update(); // Update string during tutorial
+    update();
     draw();
     setTimeout(()=>hand.style.transform="scale(1)",100);
   },250);
@@ -98,7 +98,7 @@ function resize(){let L=innerWidth>innerHeight,s=L?min(innerWidth*.6,innerHeight
 canvas.addEventListener("mousedown",e=>{
 let r=canvas.getBoundingClientRect(),s=canvas.width/grid;
 points.push([round((e.clientX-r.left)/s),round((e.clientY-r.top)/s)]);
-update(); // Only update string on canvas click
+update();
 draw();
 });
 
