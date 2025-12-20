@@ -7,17 +7,25 @@ function element(tagName,parent=document.body,className=""){let e=document.creat
 element("style").textContent=`
 body{margin:0;padding:10px;background:#121212;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center}
 .main{display:flex;flex-direction:column;align-items:center;gap:15px;width:100%;max-width:1000px;position:relative}
-@media(orientation:landscape){.main{flex-direction:row;align-items:flex-start;height:90vh}.c{flex:1;display:flex;flex-direction:column;height:100%}}
+@media(orientation:landscape){
+  .main{flex-direction:row;align-items:flex-start;height:90vh}
+  .c{flex:1;display:flex;flex-direction:column;height:100%}
+  .text{height:10em !important;}
+}
 .canvas{border:1px solid #444;touch-action:none;background:#1e1e1e;border-radius:4px;cursor:crosshair}
-.text{width:100%;font-family:monospace;padding:8px;box-sizing:border-box;height:10em;background:#252525;color:#00ff00;border:1px solid #444;outline:none}
+.text{width:100%;font-family:monospace;padding:8px;box-sizing:border-box;height:3em;background:#252525;color:#00ff00;border:1px solid #444;outline:none}
 .button{width:100%;padding:12px;font-weight:700;margin-top:5px;background:#333;color:#fff;border:1px solid #555;}
 .tut{background:#0066cc;border-color:#0088ff}
 .hand{position:absolute;font-size:30px;pointer-events:none;transition:left 0.3s ease-out, top 0.3s ease-out, transform 0.1s;display:none;z-index:10}
 `;
 
-let main=element("div",document.body,"main"),canvas=element("canvas",main,"canvas"),ctrls=element("div",main,"c");
+let main=element("div",document.body,"main");
 let hand=element("div",main,"hand");
-let text=element("textarea",ctrls,"text"),tut=element("button",ctrls,"button tut"),save=element("button",ctrls,"button");
+let text=element("textarea",main,"text");
+let canvas=element("canvas",main,"canvas");
+let ctrls=element("div",main,"c");
+let tut=element("button",ctrls,"button tut");
+let save=element("button",ctrls,"button");
 let c=canvas.getContext("2d");
 hand.textContent="\u{1F446}";
 tut.textContent="Tutorial";
