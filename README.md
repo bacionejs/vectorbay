@@ -1,5 +1,5 @@
 
-<a href="//bacionejs.github.io/vectorbay/vectorbay.html" target="_blank"> <img src="https://repository-images.githubusercontent.com/1010261785/2080c824-8910-421b-818a-b92126668aea" width="70%" /> </a>
+<a href="//bacionejs.github.io/vectorbay/vectorbay.html" target="_blank"> <img src="https://repository-images.githubusercontent.com/1010261785/f3f792d0-102f-4449-aec5-3e7df193418e" width="50%" /> </a>
 
 <details><summary>About</summary>
 
