@@ -1,123 +1,222 @@
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<script>
-onload=()=>{
-let{PI,round,min}=Math,grid=20,points=[],hi=-1;
-function element(tagName,parent=document.body,className=""){let e=document.createElement(tagName);if(className)e.className=className;parent.appendChild(e);return e;}
+<meta name="viewport" content="width=device-width"> <script> onload=()=>{
 
-element("style").textContent=`
-body{margin:0;padding:10px;background:#121212;color:#e0e0e0;font-family:sans-serif;display:flex;justify-content:center}
-.main{display:flex;flex-direction:column;align-items:center;gap:15px;width:100%;max-width:1000px;position:relative}
-@media(orientation:landscape){
-  .main{flex-direction:row;align-items:flex-start;height:90vh}
-  .c{flex:1;display:flex;flex-direction:column;height:100%}
-  .text{height:10em !important;}
-}
-.canvas{border:1px solid #444;touch-action:none;background:#1e1e1e;border-radius:4px;cursor:crosshair}
-.text{width:100%;font-family:monospace;padding:8px;box-sizing:border-box;height:3em;background:#252525;color:#00ff00;border:1px solid #444;outline:none}
-.button{width:100%;padding:12px;font-weight:700;margin-top:5px;background:#333;color:#fff;border:1px solid #555;}
-.tut{background:#0066cc;border-color:#0088ff}
-.hand{position:absolute;font-size:30px;pointer-events:none;transition:left 0.3s ease-out, top 0.3s ease-out, transform 0.1s;display:none;z-index:10}
-`;
+let {sqrt,PI,floor,round}=Math;
+let save,text,C,W,grid,offset,points,dragTarget,highlightedIndex;
+init();
 
-let main=element("div",document.body,"main");
-let hand=element("div",main,"hand");
-let text=element("textarea",main,"text");
-let canvas=element("canvas",main,"canvas");
-let ctrls=element("div",main,"c");
-let tut=element("button",ctrls,"button tut");
-let save=element("button",ctrls,"button");
-let c=canvas.getContext("2d");
-hand.textContent="\u{1F446}";
-tut.textContent="Tutorial";
-save.textContent="Export";
-
-function update() {
-let off=grid/2;
-let flat=points.map(([x,y])=>[x-off,y-off]).flat().map(v=>round(v));
-text.value="["+flat.join(",")+"]";
+function init(){
+initStyle();
+save=element("button"); save.onclick=exportHTML;
+text=element("div"); text.contentEditable=true;
+let canvas=element("canvas"); C=canvas.getContext("2d");
+W,grid=20,offset=grid/2,points=[],dragTarget=null,highlightedIndex=-1;
+canvas.addEventListener("pointerdown", handleDown);
+text.addEventListener("input", handleTextInput);
+document.addEventListener("selectionchange", () => { if(document.activeElement===text) updateHighlight(); });
+W=innerWidth<innerHeight?innerWidth:innerHeight*0.8;
+W=floor(W/grid)*grid; 
+canvas.width=canvas.height=W;
+draw(); 
 }
 
-function draw(){
-c.clearRect(0,0,canvas.width,canvas.height);
-let step=canvas.width/grid,off=grid/2,mid=canvas.width/2;c.strokeStyle="#333";c.beginPath();
-for(let i=0;i<=grid;i++){c.moveTo(i*step,0);c.lineTo(i*step,canvas.height);c.moveTo(0,i*step);c.lineTo(canvas.width,i*step)};c.stroke();
-c.strokeStyle="#ff4444";c.beginPath();c.moveTo(mid,0);c.lineTo(mid,canvas.height);c.moveTo(0,mid);c.lineTo(canvas.width,mid);c.stroke();
-if(points.length>0){
-  c.save();c.translate(mid,mid);let p=new Path2D();
-  for(let m of [1,-1]){
-    p.moveTo(m*(points[0][0]-off)*step,(points[0][1]-off)*step);
-    for(let i=1;i<points.length;i++)p.lineTo(m*(points[i][0]-off)*step,(points[i][1]-off)*step);
+
+
+
+
+
+
+
+
+
+
+function draw(shouldUpdateText=true){
+let s=W/grid,mid=W/2;
+C.clearRect(0,0,W,W);
+C.strokeStyle="#222";C.lineWidth=1;C.beginPath();
+for(let i=0;i<=grid;i++){ C.moveTo(i*s,0);C.lineTo(i*s,W); C.moveTo(0,i*s);C.lineTo(W,i*s); } C.stroke();
+C.strokeStyle="#ff4444";C.lineWidth=1;C.beginPath(); C.moveTo(0,mid);C.lineTo(W,mid); C.moveTo(mid,0);C.lineTo(mid,W); C.stroke();
+if(points.length===0)return;
+C.save();C.translate(mid,mid);
+[1,-1].forEach(m=>{
+  C.beginPath();
+  C.moveTo(m*(points[0].x-offset)*s,(points[0].y-offset)*s);
+  for(let i=1;i<points.length;i++){
+    let p=points[i];
+    C.bezierCurveTo(
+      m*(p.cp1x-offset)*s,(p.cp1y-offset)*s,
+      m*(p.cp2x-offset)*s,(p.cp2y-offset)*s,
+      m*(p.x-offset)*s,(p.y-offset)*s
+    );
   }
-  let flat=points.map(([x,y])=>[x-off,y-off]).flat().map(v=>round(v));
-  if(flat.length>0&&flat[flat.length-2]===0){c.fillStyle="rgba(0, 150, 255, 0.3)";c.fill(p)}
-  c.strokeStyle="#00bfff";c.lineWidth=2;c.stroke(p);c.restore()
-}
-points.forEach(([x,y], i)=>{
-  c.beginPath();
-  if(i === hi) { c.fillStyle = "#ffff00"; c.arc(x*step, y*step, 7, 0, PI*2); }
-  else { c.fillStyle = "#ff4444"; c.arc(x*step, y*step, 4, 0, PI*2); }
-  c.fill();
+  C.strokeStyle="#00bfff";C.lineWidth=3;C.stroke();
+  if(round(points[0].x)===offset&&round(points[points.length-1].x)===offset){
+    C.fillStyle="rgba(0, 191, 255, 0.2)";
+    C.fill();
+  }
 });
-};
+C.restore();
+points.forEach((p,i)=>{
+  let isHighlighted=(i===highlightedIndex);
+  if(isHighlighted){
+    C.shadowBlur=15;
+    C.shadowColor="white";
+    circle(p.x*s,p.y*s,10,"rgba(255,255,255,0.5)");
+  }
+  circle(p.x*s,p.y*s,6,"#ff4444");
+  C.shadowBlur=0;
+  if(i>0){
+    circle(p.cp1x*s,p.cp1y*s,4,"#00ff00");
+    circle(p.cp2x*s,p.cp2y*s,4,"#00ff00");
+    C.setLineDash([4,4]);C.strokeStyle="#666";C.beginPath();
+    C.moveTo(points[i-1].x*s,points[i-1].y*s);C.lineTo(p.cp1x*s,p.cp1y*s);
+    C.moveTo(p.x*s,p.y*s);C.lineTo(p.cp2x*s,p.cp2y*s);C.stroke();C.setLineDash([]);
+  }
+});
 
-function highlight() {
-let val = text.value, pos = text.selectionStart, regex = /-?\d+/g, match, count = 0; hi = -1; 
-while((match=regex.exec(val))!==null){if(pos>=match.index&&pos<=match.index+match[0].length){hi=Math.floor(count/2);break;}count++;}
+if(shouldUpdateText)updateText();
+}//
+
+
+
+
+
+
+
+
+
+
+
+function addPoint(x,y){
+if(points.length===0){
+  points.push({x,y});
+}else{
+  let prev=points[points.length-1];
+  points.push({
+    x,y,
+    cp1x:round(prev.x+(x-prev.x)/3),
+    cp1y:round(prev.y+(y-prev.y)/3),
+    cp2x:round(prev.x+(x-prev.x)*2/3),
+    cp2y:round(prev.y+(y-prev.y)*2/3)
+  });
+}
 draw();
 }
 
-tut.onclick=()=>{
-points=[]; hi=-1;
-let off=grid/2; let seq=[]; let raw=[0,-10,2,-1,3,1,3,-2,5,-2,5,2,6,2,10,-1,9,5,3,10,3,7,2,6,2,7,0,7];
-for(let i=0;i<raw.length;i+=2)seq.push([raw[i]+off,raw[i+1]+off]);
-tut.disabled=true;
-hand.style.display="block";
-let i=0,step=canvas.width/grid;
-let timer=setInterval(()=>{
-  if(i>=seq.length){clearInterval(timer);tut.disabled=false;setTimeout(()=>hand.style.display="none",500);return;}
-  let pt=seq[i], x=pt[0], y=pt[1];
-  hand.style.left=(x*step+canvas.offsetLeft-10)+"px";hand.style.top=(y*step+canvas.offsetTop)+"px";
-  setTimeout(()=>{
-    hand.style.transform="scale(0.7)";
-    points.push(pt); 
-    update();
-    draw();
-    setTimeout(()=>hand.style.transform="scale(1)",100);
-  },250);
-  i++;
-},600);
-};
+function updateHighlight(){
+let selection=window.getSelection();
+if(!selection||!selection.rangeCount)return;
+let textBefore=text.textContent.substring(0,selection.getRangeAt(0).startOffset);
+let matches=textBefore.match(/\[/g);
+highlightedIndex=matches?matches.length-2:-1;
+draw(false);
+}
 
-save.onclick=()=>{
-let flat=points.map(([x,y])=>[x-grid/2,y-grid/2]).flat().map(v=>round(v));
-let closed=flat.length>2 && flat[0]===0 && flat[flat.length-2]===0;
-if(!points.length) return alert("No data to export!");
-if(!closed) return alert("Shape must start and end on the red center line to close!");
-let data=text.value.replace(/[\[\]]/g,"");
-let h=`<script>onload=()=>{let c=document.body.appendChild(document.createElement("canvas"));c.width=c.height=400;c.style.border="2px solid silver";let x=c.getContext("2d"),p=[${data}];
-function shape(p){let h=new Path2D();for(let m of[1,-1]){h.moveTo(m*p[0],p[1]);for(let j=2;j<p.length;j+=2)h.lineTo(m*p[j],p[j+1]);}return h};x.translate(200,200);x.scale(20,20);
-let s=shape(p);x.fillStyle="black";x.fill(s);}<\/script>`,
-b=new Blob([h],{type:"text/html"}),a=document.createElement("a");
+function handleTextInput(){
+try{
+  let p=[]; let data=JSON.parse(text.textContent.trim());
+  data.forEach((arr,i)=>{
+    if(i===0){
+      p.push({x:arr[0]+offset,y:arr[1]+offset});
+    }else{
+      p.push({
+        cp1x:arr[0]+offset,cp1y:arr[1]+offset,
+        cp2x:arr[2]+offset,cp2y:arr[3]+offset,
+        x:arr[4]+offset,y:arr[5]+offset
+      });
+    }
+  });
+  points=p;
+  updateHighlight();
+}catch(e){}
+}
+
+function updateText(){
+let t=n=>(n-offset);
+let lines=points.map((p,i)=>
+  i===0
+    ?"["+t(p.x)+","+t(p.y)+"]"
+    :"["+t(p.cp1x)+","+t(p.cp1y)+","+t(p.cp2x)+","+t(p.cp2y)+","+t(p.x)+","+t(p.y)+"]"
+);
+text.textContent="["+lines.join(",")+"]";
+}
+
+function handleMove(e){
+if(!dragTarget)return;
+let rect=C.canvas.getBoundingClientRect(),s=W/grid;
+let mx=round((e.clientX-rect.left)/s),my=round((e.clientY-rect.top)/s);
+let p=points[dragTarget.i];
+if(dragTarget.type==="anchor"){p.x=mx;p.y=my;}
+else if(dragTarget.type==="cp1"){p.cp1x=mx;p.cp1y=my;}
+else if(dragTarget.type==="cp2"){p.cp2x=mx;p.cp2y=my;}
+draw();
+}
+
+function handleDown(e){
+window.addEventListener("pointermove", handleMove);
+window.addEventListener("pointerup", handleUp);
+window.addEventListener("pointercancel", handleUp);
+let rect=C.canvas.getBoundingClientRect(),s=W/grid;
+let mx=(e.clientX-rect.left)/s,my=(e.clientY-rect.top)/s,hit=0.6;
+for(let i=0;i<points.length;i++){
+  let p=points[i];
+  if(dist(mx,my,p.x,p.y)<hit){dragTarget={i,type:"anchor"};return;}
+  if(i>0){
+    if(dist(mx,my,p.cp1x,p.cp1y)<hit){dragTarget={i,type:"cp1"};return;}
+    if(dist(mx,my,p.cp2x,p.cp2y)<hit){dragTarget={i,type:"cp2"};return;}
+  }
+}
+addPoint(round(mx),round(my));
+}
+
+function handleUp(){
+dragTarget=null;
+window.removeEventListener("pointermove", handleMove);
+window.removeEventListener("pointerup", handleUp);
+window.removeEventListener("pointercancel", handleUp);
+}
+
+
+
+
+
+
+
+
+
+
+
+function element(tag){let e=document.createElement(tag);document.body.appendChild(e);return e;}
+function circle(x,y,r,color){C.fillStyle=color;C.beginPath();C.arc(x,y,r,0,PI*2);C.fill();}
+function dist(x1,y1,x2,y2){return sqrt((x1-x2)**2+(y1-y2)**2);}
+
+function initStyle(){
+element("style").textContent=`*{margin:0;padding:0;box-sizing:border-box;user-select:none;touch-action:none;} div{ margin:5px; height:2.5em; overflow-y:auto; user-select:text; touch-action:pan-y; background:#1a1a1a; color:#00ff00; font-family:monospace; padding:8px; outline:none; font-size:14px;} button{ margin:5px; padding:5px; cursor:pointer; background:#444; color:white; border:none; border-radius:3px;} button::before{content:'Export';} canvas { display: block; margin: auto; background:#000; cursor: crosshair; } body{ background: #222; 
+}`;
+}
+
+function exportHTML(){
+if(points.length<2)return;
+let h="";
+h+="<body style='background:#000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0'>";
+h+="<script>";
+h+="let canvas=document.body.appendChild(document.createElement('canvas'));";
+h+="canvas.width=canvas.height=600;";
+h+="let c=canvas.getContext('2d'),p="+text.textContent+";";
+h+="c.translate(300,300);c.scale(25,25);";
+h+="function shape(c,p){";
+h+="c.fillStyle='#00bfff';c.beginPath();";
+h+="for(let m of [1,-1]){";
+h+="c.moveTo(m*p[0][0],p[0][1]);";
+h+="for(let i=1;i<p.length;i++)";
+h+="c.bezierCurveTo(m*p[i][0],p[i][1],m*p[i][2],p[i][3],m*p[i][4],p[i][5]);";
+h+="}";
+h+="c.fill();";
+h+="}";
+h+="shape(c,p);";
+h+="</script></body>";
+let b=new Blob([h],{type:"text/html"}),a=document.createElement("a");
 a.href=URL.createObjectURL(b);a.download="shape.html";a.click();
 }
 
-function resize(){let L=innerWidth>innerHeight,s=L?min(innerWidth*.6,innerHeight-40):min(innerWidth-40,innerHeight*.6);canvas.width=canvas.height=s;draw()};
-
-canvas.addEventListener("mousedown",e=>{
-let r=canvas.getBoundingClientRect(),s=canvas.width/grid;
-points.push([round((e.clientX-r.left)/s),round((e.clientY-r.top)/s)]);
-update();
-draw();
-});
-
-text.addEventListener("click", highlight); text.addEventListener("keyup", highlight); text.addEventListener("input",()=>{
-  let n=text.value.match(/-?\d+/g)?.map(Number);
-  if(n && n.length % 2 === 0) {
-    points=[]; let o=grid/2;
-    for(let i=0;i<n.length;i+=2)points.push([n[i]+o,n[i+1]+o]);
-  }
-  highlight();
-});
-
-addEventListener("resize",resize);resize()};
+}
 </script>
