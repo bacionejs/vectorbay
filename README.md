@@ -5,12 +5,12 @@
 
 - **What**: VectorBay is a mobile-centric vector editor
 - **Why**: For size-constrained games
-- **How**: To open , click the thumbnail, or download and run from your file manager.
+- **How**: To open, click the thumbnail, or download and run from your file manager.
 
 </details><details><summary>Features</summary>
 
-- Grid editing: add
-- Text editing: add, insert, delete, move, clear
+- Grid editing: add, move
+- Text editing: add, move, insert, delete, clear
 - Mirror: halves the effort and size for symetrical shapes
 - Import: paste vector array
 - Export: a working html page
