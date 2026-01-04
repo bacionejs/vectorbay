@@ -199,7 +199,7 @@ function exportHTML(){
 if(points.length<2)return;
 let h="";
 h+="<body style='background:#000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0'>";
-h+="<script>";
+h+="<\script>";
 h+="let canvas=document.body.appendChild(document.createElement('canvas'));";
 h+="canvas.width=canvas.height=600;";
 h+="let c=canvas.getContext('2d'),p="+text.textContent+";";
@@ -214,7 +214,7 @@ h+="}";
 h+="c.fill();";
 h+="}";
 h+="shape(c,p);";
-h+="</script></body>";
+h+="</\script></body>";
 let b=new Blob([h],{type:"text/html"}),a=document.createElement("a");
 a.href=URL.createObjectURL(b);a.download="shape.html";a.click();
 }
