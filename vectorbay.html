@@ -5,6 +5,7 @@ let save,text,C,W,grid,offset,points,dragTarget,highlightedIndex;
 init();
 
 function init(){
+if(navigator.userAgent.includes("Firefox"))return document.body.innerHTML="Tested on Android Chrome";
 initStyle();
 save=element("button"); save.onclick=exportHTML;
 text=element("div"); text.contentEditable=true;
