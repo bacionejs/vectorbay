@@ -3,9 +3,9 @@
 
 <details><summary>About</summary>
 
-- **What**: VectorBay is a mobile-centric vector editor
-- **Why**: For size-constrained games
-- **How**: To open, click the thumbnail, or download and run from your file manager.
+VectorBay is a mobile-centric vector editor, for size-constrained games.  
+
+To open, click the thumbnail, or download and run from your file manager.  
 
 </details><details><summary>Features</summary>
 
