@@ -1,892 +1,565 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><style>body { margin: 0; padding: 0; }</style></defs><rect width='32' height='32' fill='%23000'/><circle cx='16' cy='16' r='14' fill='%23fff'/><circle cx='16' cy='16' r='10' fill='%23000'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><style>body { margin: 0; padding: 0; }</style></defs><rect width='32' height='32' fill='%23ffffff'/><path d='M16 2 Q24 8 24 16 Q24 24 16 28 Q8 24 8 16 Q8 8 16 2' stroke='%23333333' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 
 <script>
-onload = () => {
-    document.title = "VectorBay";
+onload=()=>{document.title="VectorBay";
 
-    // ============= DOM Utilities =============
-    function createElement(tag, attributes = {}, children = []) {
-        const element = document.createElement(tag);
-        for (const [key, value] of Object.entries(attributes)) {
-            if (key === 'className') {
-                element.className = value;
-            } else if (key === 'style' && typeof value === 'object') {
-                Object.assign(element.style, value);
-            } else if (key.startsWith('on') && typeof value === 'function') {
-                element.addEventListener(key.substring(2).toLowerCase(), value);
-            } else if (key === 'type' || key === 'checked') {
-                element[key] = value;
-            } else {
-                element.setAttribute(key, value);
-            }
+
+function createElement(tag, attributes = {}, children = []) {
+    const element = document.createElement(tag);
+    for (const [key, value] of Object.entries(attributes)) {
+        if (key === 'className') {
+            element.className = value;
+        } else if (key === 'style' && typeof value === 'object') {
+            Object.assign(element.style, value);
+        } else if (key.startsWith('on') && typeof value === 'function') {
+            element.addEventListener(key.substring(2).toLowerCase(), value);
+        } else if (key === 'type' || key === 'checked') {
+            element[key] = value;
+        } else {
+            element.setAttribute(key, value);
         }
-        children.forEach(child => {
-            if (typeof child === 'string') {
-                element.appendChild(document.createTextNode(child));
-            } else {
-                element.appendChild(child);
-            }
-        });
-        return element;
     }
-
-    // ============= Theme & Styling =============
-    const css = `
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            display: flex;
-            flex-direction: row;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            touch-action: none;
+    children.forEach(child => {
+        if (typeof child === 'string') {
+            element.appendChild(document.createTextNode(child));
+        } else {
+            element.appendChild(child);
         }
+    });
+    return element;
+}
 
-        #main-layout {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-            gap: 0;
-        }
+const css = `
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #f0f0f0; color: #333; font-family: sans-serif; display: flex; flex-direction: row; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
+    #canvas-container { width: 100dvmin; height: 100dvmin; flex-shrink: 0; position: relative; background-color: #ffffff; }
+    canvas { touch-action: none; width: 100%; height: 100%; display: block; }
+    #toolbar { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 20px; background-color: #e4e4e4; border-left: 1px solid #ccc; overflow-y: auto; }
+    button { background-color: #ffffff; color: #333; border: 1px solid #aaa; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background-color: #e9e9e9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .control-group { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 5px;}
+    #landscape-hint { position: fixed; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.7); color: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+    #landscape-hint.show { opacity: 1; }
+    #github-link { position: fixed; bottom: 10px; right: 10px; width: 50px; height: 50px; border-radius: 50%; background-color: #333; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.2s; z-index: 999; }
+    #github-link:hover { background-color: #555; transform: scale(1.1); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
+    #github-link:active { transform: scale(0.95); }
+    #github-link svg { width: 24px; height: 24px; }
+`;
 
-        #canvas-container {
-            flex: 1;
-            position: relative;
-            background-color: #2a2a2a;
-            border-right: 1px solid #404040;
-        }
+const styleElement = createElement('style', {}, [css]);
+document.head.appendChild(styleElement);
 
-        canvas {
-            touch-action: none;
-            width: 100%;
-            height: 100%;
-            display: block;
-            background-color: #ffffff;
-        }
+let P = [];
+let history = [];
+let historyIndex = -1;
+let selectedPoint = null; 
+let isDragging = false;
+let showFill = true;
+let snapToGrid = true;
+let isMirrored = true;
+const GRID_CELLS = 20;
 
-        #preview-panel {
-            width: 200px;
-            background-color: #1f1f1f;
-            border-left: 1px solid #404040;
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            gap: 8px;
-            overflow-y: auto;
-        }
-
-        #preview-title {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-            margin-bottom: 4px;
-        }
-
-        #preview-canvas {
-            width: 100%;
-            aspect-ratio: 1;
-            background-color: #ffffff;
-            border-radius: 6px;
-            border: 1px solid #404040;
-        }
-
-        #toolbar {
-            width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 20px;
-            background-color: #252525;
-            border-left: 1px solid #404040;
-            overflow-y: auto;
-        }
-
-        .toolbar-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .section-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-top: 8px;
-            margin-bottom: 4px;
-        }
-
-        button {
-            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-            color: #ffffff;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        button:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5aa3ff 0%, #3d8ae6 100%);
-            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-            transform: translateY(-1px);
-        }
-
-        button:active:not(:disabled) {
-            transform: translateY(0);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
-        }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            padding: 8px 0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .control-group:hover {
-            color: #4a90e2;
-        }
-
-        .control-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #4a90e2;
-        }
-
-        label {
-            user-select: none;
-        }
-
-        #landscape-hint {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            backdrop-filter: blur(4px);
-        }
-
-        #landscape-hint.show {
-            opacity: 1;
-        }
-
-        #github-link {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
-            border: 1px solid #404040;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        #github-link:hover {
-            background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%);
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.3);
-            border-color: #4a90e2;
-        }
-
-        #github-link:active {
-            transform: scale(0.95);
-        }
-
-        #github-link svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-            color: #e0e0e0;
-        }
-    `;
-
-    const styleElement = createElement('style', {}, [css]);
-    document.head.appendChild(styleElement);
-
-    // ============= State Management =============
-    let P = [];
-    let history = [];
-    let historyIndex = -1;
-    let selectedPoint = null;
-    let isDragging = false;
-    let showFill = true;
-    let snapToGrid = true;
-    let isMirrored = true;
-    const GRID_CELLS = 20;
-
-    // ============= URL & Persistence =============
-    function parseURL() {
-        const params = new URLSearchParams(window.location.search);
-        const mParam = params.get('m');
-        if (mParam !== null) {
-            isMirrored = mParam !== '0';
-        }
-
-        const pParam = params.get('p');
-        if (pParam) {
-            try {
-                return JSON.parse(pParam);
-            } catch (e) {
-                return [[0, -7], [1, -8, 2, -8, 3, -7]];
-            }
-        }
-        return [[0, -7], [1, -8, 2, -8, 3, -7]];
+function parseURL() {
+    const params = new URLSearchParams(window.location.search);
+    const mParam = params.get('m');
+    if (mParam !== null) {
+        isMirrored = mParam !== '0';
     }
-
-    function updateURL() {
-        const url = new URL(window.location);
-        url.searchParams.set('p', JSON.stringify(P));
-        url.searchParams.set('m', isMirrored ? '1' : '0');
-        window.history.replaceState({}, '', url);
-    }
-
-    function saveState() {
-        if (historyIndex < history.length - 1) {
-            history = history.slice(0, historyIndex + 1);
+    
+    const pParam = params.get('p');
+    if (pParam) {
+        try {
+            return JSON.parse(pParam);
+        } catch (e) {
+            return [[0, -7], [1, -8, 2, -8, 3, -7]]; 
         }
-        history.push(JSON.parse(JSON.stringify(P)));
-        historyIndex++;
+    }
+    return [[0, -7], [1, -8, 2, -8, 3, -7]]; 
+}
+
+function updateURL() {
+    const url = new URL(window.location);
+    url.searchParams.set('p', JSON.stringify(P));
+    url.searchParams.set('m', isMirrored ? '1' : '0');
+    window.history.replaceState({}, '', url);
+}
+
+function saveState() {
+    if (historyIndex < history.length - 1) {
+        history = history.slice(0, historyIndex + 1);
+    }
+    history.push(JSON.parse(JSON.stringify(P)));
+    historyIndex++;
+    updateUI();
+    updateURL();
+}
+
+function undo() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        P = JSON.parse(JSON.stringify(history[historyIndex]));
+        selectedPoint = null;
         updateUI();
         updateURL();
-    }
-
-    // ============= History =============
-    function undo() {
-        if (historyIndex > 0) {
-            historyIndex--;
-            P = JSON.parse(JSON.stringify(history[historyIndex]));
-            selectedPoint = null;
-            updateUI();
-            updateURL();
-            render();
-            renderPreview();
-        }
-    }
-
-    function redo() {
-        if (historyIndex < history.length - 1) {
-            historyIndex++;
-            P = JSON.parse(JSON.stringify(history[historyIndex]));
-            selectedPoint = null;
-            updateUI();
-            updateURL();
-            render();
-            renderPreview();
-        }
-    }
-
-    // ============= Canvas Setup =============
-    const mainLayout = createElement('div', { id: 'main-layout' });
-    const container = createElement('div', { id: 'canvas-container' });
-    const canvas = createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    container.appendChild(canvas);
-
-    const previewPanel = createElement('div', { id: 'preview-panel' });
-    const previewTitle = createElement('div', { id: 'preview-title' }, ['Export Preview']);
-    const previewCanvas = createElement('canvas', { id: 'preview-canvas' });
-    const previewCtx = previewCanvas.getContext('2d');
-    previewPanel.appendChild(previewTitle);
-    previewPanel.appendChild(previewCanvas);
-
-    mainLayout.appendChild(container);
-    mainLayout.appendChild(previewPanel);
-
-    function resizeCanvas() {
-        const rect = container.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
         render();
-
-        // Resize preview canvas
-        const previewDpr = window.devicePixelRatio || 1;
-        const previewRect = previewCanvas.getBoundingClientRect();
-        previewCanvas.width = previewRect.width * previewDpr;
-        previewCanvas.height = previewRect.height * previewDpr;
-        previewCtx.scale(previewDpr, previewDpr);
-        renderPreview();
     }
+}
 
-    window.addEventListener('resize', resizeCanvas);
-
-    function getGridScale() {
-        const rect = canvas.getBoundingClientRect();
-        return rect.width / GRID_CELLS;
+function redo() {
+    if (historyIndex < history.length - 1) {
+        historyIndex++;
+        P = JSON.parse(JSON.stringify(history[historyIndex]));
+        selectedPoint = null;
+        updateUI();
+        updateURL();
+        render();
     }
+}
 
-    function toScreen(x, y) {
-        const rect = canvas.getBoundingClientRect();
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const scale = getGridScale();
-        return {
-            x: cx + x * scale,
-            y: cy + y * scale
-        };
+const container = createElement('div', { id: 'canvas-container' });
+const canvas = createElement('canvas');
+const ctx = canvas.getContext('2d');
+container.appendChild(canvas);
+
+function resizeCanvas() {
+    const rect = container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    render();
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+function getGridScale() {
+    const rect = canvas.getBoundingClientRect();
+    return rect.width / GRID_CELLS;
+}
+
+function toScreen(x, y) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const scale = getGridScale();
+    return {
+        x: cx + x * scale,
+        y: cy + y * scale
+    };
+}
+
+function toGrid(sx, sy) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const scale = getGridScale();
+    let x = (sx - cx) / scale;
+    let y = (sy - cy) / scale;
+    
+    if (snapToGrid) {
+        x = Math.round(x);
+        y = Math.round(y);
+    } else {
+        x = parseFloat(x.toFixed(2));
+        y = parseFloat(y.toFixed(2));
     }
+    return { x, y };
+}
 
-    function toGrid(sx, sy) {
-        const rect = canvas.getBoundingClientRect();
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const scale = getGridScale();
-        let x = (sx - cx) / scale;
-        let y = (sy - cy) / scale;
+function renderShape(context, targetP, isFillPhase = false, scaleOverride = null) {
+    if (targetP.length === 0) return;
+    const scale = scaleOverride !== null ? scaleOverride : getGridScale();
+    context.beginPath();
+    
+    const startX = targetP[0][0] * scale;
+    const startY = targetP[0][1] * scale;
+    context.moveTo(startX, startY);
 
-        if (snapToGrid) {
-            x = Math.round(x);
-            y = Math.round(y);
-        } else {
-            x = parseFloat(x.toFixed(2));
-            y = parseFloat(y.toFixed(2));
+    for (let i = 1; i < targetP.length; i++) {
+        const seg = targetP[i];
+        if (seg.length === 2) {
+            context.lineTo(seg[0] * scale, seg[1] * scale);
+        } else if (seg.length === 6) {
+            context.bezierCurveTo(
+                seg[0] * scale, seg[1] * scale,
+                seg[2] * scale, seg[3] * scale,
+                seg[4] * scale, seg[5] * scale
+            );
         }
-        return { x, y };
     }
 
-    // ============= Shape Rendering =============
-    function renderShape(context, targetP, isFillPhase = false, scaleOverride = null, centerX = null, centerY = null) {
-        if (targetP.length === 0) return;
-        const scale = scaleOverride !== null ? scaleOverride : getGridScale();
-        context.beginPath();
-
-        const startX = targetP[0][0] * scale;
-        const startY = targetP[0][1] * scale;
-        context.moveTo(startX, startY);
-
-        for (let i = 1; i < targetP.length; i++) {
-            const seg = targetP[i];
-            if (seg.length === 2) {
-                context.lineTo(seg[0] * scale, seg[1] * scale);
-            } else if (seg.length === 6) {
-                context.bezierCurveTo(
-                    seg[0] * scale, seg[1] * scale,
-                    seg[2] * scale, seg[3] * scale,
-                    seg[4] * scale, seg[5] * scale
-                );
-            }
-        }
-
-        if (isFillPhase) {
-            context.fill();
-        } else {
-            context.stroke();
-        }
+    if (isFillPhase) {
+        context.fill();
+    } else {
+        context.stroke();
     }
+}
 
-    // ============= Main Render =============
-    function render() {
-        const rect = canvas.getBoundingClientRect();
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const scale = getGridScale();
+function render() {
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const scale = getGridScale();
 
-        ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    
+    ctx.save();
+    ctx.translate(cx, cy);
 
+    // Draw Grid
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const halfCells = GRID_CELLS / 2;
+    for (let i = -halfCells; i <= halfCells; i++) {
+        ctx.moveTo(i * scale, -cy); ctx.lineTo(i * scale, cy);
+        ctx.moveTo(-cx, i * scale); ctx.lineTo(cx, i * scale);
+    }
+    ctx.stroke();
+
+    // Draw Axes
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -cy); ctx.lineTo(0, cy);
+    ctx.moveTo(-cx, 0); ctx.lineTo(cx, 0);
+    ctx.stroke();
+
+    if (showFill) {
+        ctx.fillStyle = '#000000';
+        
         ctx.save();
-        ctx.translate(cx, cy);
+        renderShape(ctx, P, true);
+        ctx.restore();
 
-        // Draw Grid
-        ctx.strokeStyle = '#e0e0e0';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const halfCells = GRID_CELLS / 2;
-        for (let i = -halfCells; i <= halfCells; i++) {
-            ctx.moveTo(i * scale, -cy);
-            ctx.lineTo(i * scale, cy);
-            ctx.moveTo(-cx, i * scale);
-            ctx.lineTo(cx, i * scale);
-        }
-        ctx.stroke();
-
-        // Draw Axes
-        ctx.strokeStyle = '#999';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, -cy);
-        ctx.lineTo(0, cy);
-        ctx.moveTo(-cx, 0);
-        ctx.lineTo(cx, 0);
-        ctx.stroke();
-
-        // Draw Fill
-        if (showFill) {
-            ctx.fillStyle = '#000000';
-
+        if (isMirrored) {
             ctx.save();
+            ctx.scale(-1, 1);
             renderShape(ctx, P, true);
             ctx.restore();
-
-            if (isMirrored) {
-                ctx.save();
-                ctx.scale(-1, 1);
-                renderShape(ctx, P, true);
-                ctx.restore();
-            }
         }
-
-        // Draw Stroke
-        ctx.strokeStyle = '#ff0000';
-        ctx.lineWidth = 2;
-        renderShape(ctx, P, false);
-
-        // Draw Handles & Points
-        ctx.lineWidth = 1;
-        for (let i = 0; i < P.length; i++) {
-            const seg = P[i];
-
-            if (seg.length === 6 && i > 0) {
-                const prevX = P[i - 1][P[i - 1].length - 2] * scale;
-                const prevY = P[i - 1][P[i - 1].length - 1] * scale;
-                const cp1x = seg[0] * scale;
-                const cp1y = seg[1] * scale;
-                const cp2x = seg[2] * scale;
-                const cp2y = seg[3] * scale;
-                const ax = seg[4] * scale;
-                const ay = seg[5] * scale;
-
-                ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
-                ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(prevX, prevY);
-                ctx.lineTo(cp1x, cp1y);
-                ctx.moveTo(ax, ay);
-                ctx.lineTo(cp2x, cp2y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                drawPoint(cp1x, cp1y, '#0000ff');
-                drawPoint(cp2x, cp2y, '#0000ff');
-            }
-
-            const ax = seg[seg.length - 2] * scale;
-            const ay = seg[seg.length - 1] * scale;
-            const isSelected = selectedPoint && selectedPoint.segmentIndex === i && selectedPoint.type === 'anchor';
-            drawPoint(ax, ay, isSelected ? '#ffcc00' : '#ff0000');
-        }
-
-        ctx.restore();
     }
 
-    function drawPoint(x, y, color) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    }
+    // Draw Stroke
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 2;
+    renderShape(ctx, P, false);
 
-    // ============= Preview Render =============
-    function renderPreview() {
-        const rect = previewCanvas.getBoundingClientRect();
-        previewCtx.clearRect(0, 0, rect.width, rect.height);
+    // Draw Handles & Points
+    ctx.lineWidth = 1;
+    for (let i = 0; i < P.length; i++) {
+        const seg = P[i];
+        
+        if (seg.length === 6 && i > 0) {
+            const prevX = P[i-1][P[i-1].length - 2] * scale;
+            const prevY = P[i-1][P[i-1].length - 1] * scale;
+            const cp1x = seg[0] * scale;
+            const cp1y = seg[1] * scale;
+            const cp2x = seg[2] * scale;
+            const cp2y = seg[3] * scale;
+            const ax = seg[4] * scale;
+            const ay = seg[5] * scale;
 
-        if (P.length === 0) return;
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY); ctx.lineTo(cp1x, cp1y);
+            ctx.moveTo(ax, ay); ctx.lineTo(cp2x, cp2y);
+            ctx.stroke();
+            ctx.setLineDash([]);
 
-        // Calculate bounding box
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-
-        P.forEach(seg => {
-            const ax = seg[seg.length - 2], ay = seg[seg.length - 1];
-            if (isMirrored) {
-                minX = Math.min(minX, -Math.abs(ax));
-                maxX = Math.max(maxX, Math.abs(ax));
-            } else {
-                minX = Math.min(minX, ax);
-                maxX = Math.max(maxX, ax);
-            }
-            minY = Math.min(minY, ay);
-            maxY = Math.max(maxY, ay);
-
-            if (seg.length === 6) {
-                if (isMirrored) {
-                    minX = Math.min(minX, -Math.abs(seg[0]), -Math.abs(seg[2]));
-                    maxX = Math.max(maxX, Math.abs(seg[0]), Math.abs(seg[2]));
-                } else {
-                    minX = Math.min(minX, seg[0], seg[2]);
-                    maxX = Math.max(maxX, seg[0], seg[2]);
-                }
-                minY = Math.min(minY, seg[1], seg[3]);
-                maxY = Math.max(maxY, seg[1], seg[3]);
-            }
-        });
-
-        if (minX === Infinity) {
-            minX = -10;
-            maxX = 10;
-            minY = -10;
-            maxY = 10;
+            drawPoint(cp1x, cp1y, '#0000ff');
+            drawPoint(cp2x, cp2y, '#0000ff');
         }
 
-        const padding = rect.width * 0.1;
-        const artWidth = (maxX - minX) || 1;
-        const artHeight = (maxY - minY) || 1;
+        const ax = seg[seg.length - 2] * scale;
+        const ay = seg[seg.length - 1] * scale;
+        const isSelected = selectedPoint && selectedPoint.segmentIndex === i && selectedPoint.type === 'anchor';
+        drawPoint(ax, ay, isSelected ? '#ffcc00' : '#ff0000');
+    }
 
-        const scaleX = (rect.width - padding * 2) / artWidth;
-        const scaleY = (rect.height - padding * 2) / artHeight;
-        const scale = Math.min(scaleX, scaleY);
+    ctx.restore();
+}
 
-        // White background
-        previewCtx.fillStyle = '#ffffff';
-        previewCtx.fillRect(0, 0, rect.width, rect.height);
+function drawPoint(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
 
-        previewCtx.translate(rect.width / 2, rect.height / 2);
-        const centerXOffset = -((maxX + minX) / 2) * scale;
-        const centerYOffset = -((maxY + minY) / 2) * scale;
-        previewCtx.translate(centerXOffset, centerYOffset);
+function getHitPoint(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const pointerX = clientX - rect.left;
+    const pointerY = clientY - rect.top;
+    
+    let closest = null;
+    let minDist = 20;
 
-        previewCtx.fillStyle = '#000000';
-        previewCtx.save();
-        renderShape(previewCtx, P, true, scale);
-        previewCtx.restore();
+    for (let i = P.length - 1; i >= 0; i--) {
+        const seg = P[i];
+        
+        const ax = seg[seg.length - 2];
+        const ay = seg[seg.length - 1];
+        const sAnchor = toScreen(ax, ay);
+        const dAnchor = Math.hypot(pointerX - sAnchor.x, pointerY - sAnchor.y);
+        
+        if (dAnchor < minDist) {
+            minDist = dAnchor;
+            closest = { segmentIndex: i, type: 'anchor' };
+        }
 
+        if (seg.length === 6) {
+            const scp1 = toScreen(seg[0], seg[1]);
+            const dCp1 = Math.hypot(pointerX - scp1.x, pointerY - scp1.y);
+            if (dCp1 < minDist) {
+                minDist = dCp1;
+                closest = { segmentIndex: i, type: 'cp1' };
+            }
+
+            const scp2 = toScreen(seg[2], seg[3]);
+            const dCp2 = Math.hypot(pointerX - scp2.x, pointerY - scp2.y);
+            if (dCp2 < minDist) {
+                minDist = dCp2;
+                closest = { segmentIndex: i, type: 'cp2' };
+            }
+        }
+    }
+    return closest;
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+    selectedPoint = getHitPoint(e.clientX, e.clientY);
+    if (selectedPoint) {
+        isDragging = true;
+        canvas.setPointerCapture(e.pointerId);
+    }
+    render();
+});
+
+canvas.addEventListener('pointermove', (e) => {
+    if (!isDragging || !selectedPoint) return;
+    const rect = canvas.getBoundingClientRect();
+    const gridPos = toGrid(e.clientX - rect.left, e.clientY - rect.top);
+    const seg = P[selectedPoint.segmentIndex];
+
+    if (selectedPoint.type === 'anchor') {
+        seg[seg.length - 2] = gridPos.x;
+        seg[seg.length - 1] = gridPos.y;
+    } else if (selectedPoint.type === 'cp1') {
+        seg[0] = gridPos.x;
+        seg[1] = gridPos.y;
+    } else if (selectedPoint.type === 'cp2') {
+        seg[2] = gridPos.x;
+        seg[3] = gridPos.y;
+    }
+    render();
+});
+
+canvas.addEventListener('pointerup', (e) => {
+    if (isDragging) {
+        isDragging = false;
+        canvas.releasePointerCapture(e.pointerId);
+        saveState();
+    }
+});
+
+function exportImage() {
+    const exportSize = 2048;
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = exportSize;
+    offCanvas.height = exportSize;
+    const offCtx = offCanvas.getContext('2d');
+
+    // Calculate bounding box bounds to scale and center perfectly
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    
+    P.forEach(seg => {
+        const ax = seg[seg.length - 2], ay = seg[seg.length - 1];
         if (isMirrored) {
-            previewCtx.save();
-            previewCtx.scale(-1, 1);
-            renderShape(previewCtx, P, true, scale);
-            previewCtx.restore();
+            minX = Math.min(minX, -Math.abs(ax)); 
+            maxX = Math.max(maxX, Math.abs(ax));
+        } else {
+            minX = Math.min(minX, ax); 
+            maxX = Math.max(maxX, ax);
         }
-    }
-
-    // ============= Input Handling =============
-    function getHitPoint(clientX, clientY) {
-        const rect = canvas.getBoundingClientRect();
-        const pointerX = clientX - rect.left;
-        const pointerY = clientY - rect.top;
-
-        let closest = null;
-        let minDist = 20;
-
-        for (let i = P.length - 1; i >= 0; i--) {
-            const seg = P[i];
-
-            const ax = seg[seg.length - 2];
-            const ay = seg[seg.length - 1];
-            const sAnchor = toScreen(ax, ay);
-            const dAnchor = Math.hypot(pointerX - sAnchor.x, pointerY - sAnchor.y);
-
-            if (dAnchor < minDist) {
-                minDist = dAnchor;
-                closest = { segmentIndex: i, type: 'anchor' };
-            }
-
-            if (seg.length === 6) {
-                const scp1 = toScreen(seg[0], seg[1]);
-                const dCp1 = Math.hypot(pointerX - scp1.x, pointerY - scp1.y);
-                if (dCp1 < minDist) {
-                    minDist = dCp1;
-                    closest = { segmentIndex: i, type: 'cp1' };
-                }
-
-                const scp2 = toScreen(seg[2], seg[3]);
-                const dCp2 = Math.hypot(pointerX - scp2.x, pointerY - scp2.y);
-                if (dCp2 < minDist) {
-                    minDist = dCp2;
-                    closest = { segmentIndex: i, type: 'cp2' };
-                }
-            }
-        }
-        return closest;
-    }
-
-    canvas.addEventListener('pointerdown', (e) => {
-        selectedPoint = getHitPoint(e.clientX, e.clientY);
-        if (selectedPoint) {
-            isDragging = true;
-            canvas.setPointerCapture(e.pointerId);
-        }
-        render();
-    });
-
-    canvas.addEventListener('pointermove', (e) => {
-        if (!isDragging || !selectedPoint) return;
-        const rect = canvas.getBoundingClientRect();
-        const gridPos = toGrid(e.clientX - rect.left, e.clientY - rect.top);
-        const seg = P[selectedPoint.segmentIndex];
-
-        if (selectedPoint.type === 'anchor') {
-            seg[seg.length - 2] = gridPos.x;
-            seg[seg.length - 1] = gridPos.y;
-        } else if (selectedPoint.type === 'cp1') {
-            seg[0] = gridPos.x;
-            seg[1] = gridPos.y;
-        } else if (selectedPoint.type === 'cp2') {
-            seg[2] = gridPos.x;
-            seg[3] = gridPos.y;
-        }
-        render();
-        renderPreview();
-    });
-
-    canvas.addEventListener('pointerup', (e) => {
-        if (isDragging) {
-            isDragging = false;
-            canvas.releasePointerCapture(e.pointerId);
-            saveState();
-        }
-    });
-
-    // ============= Export =============
-    function exportImage() {
-        const exportSize = 2048;
-        const offCanvas = document.createElement('canvas');
-        offCanvas.width = exportSize;
-        offCanvas.height = exportSize;
-        const offCtx = offCanvas.getContext('2d');
-
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-
-        P.forEach(seg => {
-            const ax = seg[seg.length - 2], ay = seg[seg.length - 1];
+        minY = Math.min(minY, ay); 
+        maxY = Math.max(maxY, ay);
+        
+        if (seg.length === 6) {
             if (isMirrored) {
-                minX = Math.min(minX, -Math.abs(ax));
-                maxX = Math.max(maxX, Math.abs(ax));
+                minX = Math.min(minX, -Math.abs(seg[0]), -Math.abs(seg[2]));
+                maxX = Math.max(maxX, Math.abs(seg[0]), Math.abs(seg[2]));
             } else {
-                minX = Math.min(minX, ax);
-                maxX = Math.max(maxX, ax);
+                minX = Math.min(minX, seg[0], seg[2]);
+                maxX = Math.max(maxX, seg[0], seg[2]);
             }
-            minY = Math.min(minY, ay);
-            maxY = Math.max(maxY, ay);
-
-            if (seg.length === 6) {
-                if (isMirrored) {
-                    minX = Math.min(minX, -Math.abs(seg[0]), -Math.abs(seg[2]));
-                    maxX = Math.max(maxX, Math.abs(seg[0]), Math.abs(seg[2]));
-                } else {
-                    minX = Math.min(minX, seg[0], seg[2]);
-                    maxX = Math.max(maxX, seg[0], seg[2]);
-                }
-                minY = Math.min(minY, seg[1], seg[3]);
-                maxY = Math.max(maxY, seg[1], seg[3]);
-            }
-        });
-
-        if (minX === Infinity) {
-            minX = -10;
-            maxX = 10;
-            minY = -10;
-            maxY = 10;
+            minY = Math.min(minY, seg[1], seg[3]);
+            maxY = Math.max(maxY, seg[1], seg[3]);
         }
+    });
 
-        const padding = exportSize * 0.1;
-        const artWidth = (maxX - minX) || 1;
-        const artHeight = (maxY - minY) || 1;
+    if (minX === Infinity) { minX = -10; maxX = 10; minY = -10; maxY = 10; }
 
-        const scaleX = (exportSize - padding * 2) / artWidth;
-        const scaleY = (exportSize - padding * 2) / artHeight;
-        const scale = Math.min(scaleX, scaleY);
+    const padding = exportSize * 0.1; // 10% padding
+    const artWidth = (maxX - minX) || 1;
+    const artHeight = (maxY - minY) || 1;
+    
+    // Determine the ideal scale to fit the drawing onto the 2048x2048 canvas
+    const scaleX = (exportSize - padding * 2) / artWidth;
+    const scaleY = (exportSize - padding * 2) / artHeight;
+    const scale = Math.min(scaleX, scaleY);
 
-        offCtx.fillStyle = '#ffffff';
-        offCtx.fillRect(0, 0, exportSize, exportSize);
+    // Draw White Background
+    offCtx.fillStyle = '#ffffff';
+    offCtx.fillRect(0, 0, exportSize, exportSize);
+    
+    // Move to center
+    offCtx.translate(exportSize / 2, exportSize / 2);
+    
+    // Offset for centering based on actual art bounds
+    const centerXOffset = -((maxX + minX) / 2) * scale;
+    const centerYOffset = -((maxY + minY) / 2) * scale;
+    offCtx.translate(centerXOffset, centerYOffset);
 
-        offCtx.translate(exportSize / 2, exportSize / 2);
-        const centerXOffset = -((maxX + minX) / 2) * scale;
-        const centerYOffset = -((maxY + minY) / 2) * scale;
-        offCtx.translate(centerXOffset, centerYOffset);
+    offCtx.fillStyle = '#000000';
+    
+    offCtx.save();
+    renderShape(offCtx, P, true, scale);
+    offCtx.restore();
 
-        offCtx.fillStyle = '#000000';
-
+    if (isMirrored) {
         offCtx.save();
+        offCtx.scale(-1, 1);
         renderShape(offCtx, P, true, scale);
         offCtx.restore();
-
-        if (isMirrored) {
-            offCtx.save();
-            offCtx.scale(-1, 1);
-            renderShape(offCtx, P, true, scale);
-            offCtx.restore();
-        }
-
-        const link = document.createElement('a');
-        link.download = 'bezier-art.png';
-        link.href = offCanvas.toDataURL('image/png');
-        link.click();
     }
 
-    // ============= UI Controls =============
-    const btnUndo = createElement('button', { onClick: undo }, ['↶ Undo']);
-    const btnRedo = createElement('button', { onClick: redo }, ['↷ Redo']);
+    // Trigger download
+    const link = document.createElement('a');
+    link.download = 'bezier-art.png';
+    link.href = offCanvas.toDataURL('image/png');
+    link.click();
+}
 
-    const btnAdd = createElement('button', { onClick: () => {
-        const idx = selectedPoint ? selectedPoint.segmentIndex : P.length - 1;
-        if (idx < 0) return;
+const btnUndo = createElement('button', { onClick: undo }, ['Undo']);
+const btnRedo = createElement('button', { onClick: redo }, ['Redo']);
 
-        const lastSeg = P[idx];
-        const lx = lastSeg[lastSeg.length - 2];
-        const ly = lastSeg[lastSeg.length - 1];
+const btnAdd = createElement('button', { onClick: () => {
+    const idx = selectedPoint ? selectedPoint.segmentIndex : P.length - 1;
+    if (idx < 0) return;
+    
+    const lastSeg = P[idx];
+    // Securely grab the final X and Y anchor coordinates regardless of segment length
+    const lx = lastSeg[lastSeg.length - 2];
+    const ly = lastSeg[lastSeg.length - 1];
+    
+    // Always insert a valid 6-element cubic bezier segment
+    P.splice(idx + 1, 0, [lx + 1, ly, lx + 2, ly, lx + 3, ly]);
+    
+    selectedPoint = { segmentIndex: idx + 1, type: 'anchor' };
+    saveState();
+    render();
+} }, ['Add Point']);
 
-        P.splice(idx + 1, 0, [lx + 1, ly, lx + 2, ly, lx + 3, ly]);
 
-        selectedPoint = { segmentIndex: idx + 1, type: 'anchor' };
-        saveState();
-        render();
-        renderPreview();
-    } }, ['+ Add Point']);
-
-    const btnDelete = createElement('button', { onClick: () => {
-        if (selectedPoint && P.length > 1) {
-            P.splice(selectedPoint.segmentIndex, 1);
-            selectedPoint = null;
-            saveState();
-            render();
-            renderPreview();
-        }
-    } }, ['✕ Delete']);
-
-    const btnReset = createElement('button', { onClick: () => {
-        P = [[0, -7], [1, -8, 2, -8, 3, -7]];
+const btnDelete = createElement('button', { onClick: () => {
+    if (selectedPoint && P.length > 1) {
+        P.splice(selectedPoint.segmentIndex, 1);
         selectedPoint = null;
         saveState();
         render();
-        renderPreview();
-    } }, ['⟲ Reset']);
-
-    const btnCopyArray = createElement('button', { onClick: () => {
-        navigator.clipboard.writeText(JSON.stringify(P));
-        const originalText = btnCopyArray.innerText;
-        btnCopyArray.innerText = '✓ Copied!';
-        setTimeout(() => btnCopyArray.innerText = originalText, 1500);
-    } }, ['📋 Copy']);
-
-    const btnExport = createElement('button', { onClick: exportImage }, ['⬇ Export PNG']);
-
-    const chkSnap = createElement('input', {
-        type: 'checkbox',
-        checked: true,
-        onChange: (e) => {
-            snapToGrid = e.target.checked;
-            render();
-        }
-    });
-    const lblSnap = createElement('label', {}, [chkSnap, ' Snap to Grid']);
-    const divSnap = createElement('div', { className: 'control-group' }, [lblSnap]);
-
-    const chkFill = createElement('input', {
-        type: 'checkbox',
-        checked: true,
-        onChange: (e) => {
-            showFill = e.target.checked;
-            render();
-        }
-    });
-    const lblFill = createElement('label', {}, [chkFill, ' Show Fill']);
-    const divFill = createElement('div', { className: 'control-group' }, [lblFill]);
-
-    const chkMirror = createElement('input', {
-        type: 'checkbox',
-        checked: true,
-        onChange: (e) => {
-            isMirrored = e.target.checked;
-            updateURL();
-            render();
-            renderPreview();
-        }
-    });
-    const lblMirror = createElement('label', {}, [chkMirror, ' Mirrored']);
-    const divMirror = createElement('div', { className: 'control-group' }, [lblMirror]);
-
-    const toolbar = createElement('div', { id: 'toolbar' }, [
-        createElement('div', { className: 'toolbar-section' }, [
-            createElement('div', { className: 'section-title' }, ['Editing']),
-            createElement('div', { className: 'button-group' }, [btnUndo, btnRedo]),
-            createElement('div', { className: 'button-group' }, [btnAdd, btnDelete]),
-            btnReset
-        ]),
-        createElement('div', { className: 'toolbar-section' }, [
-            createElement('div', { className: 'section-title' }, ['Options']),
-            divSnap,
-            divFill,
-            divMirror
-        ]),
-        createElement('div', { className: 'toolbar-section' }, [
-            createElement('div', { className: 'section-title' }, ['Export']),
-            btnCopyArray,
-            btnExport
-        ])
-    ]);
-
-    function updateUI() {
-        btnUndo.disabled = historyIndex <= 0;
-        btnRedo.disabled = historyIndex >= history.length - 1;
-        btnDelete.disabled = !selectedPoint || P.length <= 1;
-        chkMirror.checked = isMirrored;
     }
+} }, ['Delete Point']);
 
-    // ============= Layout Assembly =============
-    document.body.appendChild(mainLayout);
-    document.body.appendChild(toolbar);
-
-    P = parseURL();
+const btnReset = createElement('button', { onClick: () => {
+    P = [[0, -7], [1, -8, 2, -8, 3, -7]];
+    selectedPoint = null;
     saveState();
-    resizeCanvas();
+    render();
+} }, ['Reset']);
 
-    const hint = createElement('div', { id: 'landscape-hint' }, ['💡 Rotate to landscape for best experience']);
-    document.body.appendChild(hint);
+const btnCopyArray = createElement('button', { onClick: () => {
+    navigator.clipboard.writeText(JSON.stringify(P));
+    
+    // Provide brief visual feedback
+    const originalText = btnCopyArray.innerText;
+    btnCopyArray.innerText = 'Copied!';
+    setTimeout(() => btnCopyArray.innerText = originalText, 1500);
+} }, ['Copy Array']);
 
-    const githubBtn = createElement('button', {
-        id: 'github-link',
-        onClick: () => window.open('https://github.com/bacionejs/art', '_blank'),
-        title: 'View on GitHub'
-    });
+const btnExport = createElement('button', { onClick: exportImage }, ['Export PNG']);
 
-    const githubSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    githubSvg.setAttribute('viewBox', '0 0 24 24');
-    githubSvg.setAttribute('fill', 'currentColor');
-    githubSvg.innerHTML = '<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>';
-    githubBtn.appendChild(githubSvg);
-    document.body.appendChild(githubBtn);
+const chkSnap = createElement('input', { 
+    type: 'checkbox', 
+    checked: true,
+    onChange: (e) => { snapToGrid = e.target.checked; render(); }
+});
+const lblSnap = createElement('label', {}, [chkSnap, ' Snap to Grid']);
+const divSnap = createElement('div', { className: 'control-group' }, [lblSnap]);
 
-    const checkOrient = () => {
-        const isPortrait = window.innerHeight > window.innerWidth;
-        hint.classList.toggle('show', isPortrait);
-    };
+const chkFill = createElement('input', { 
+    type: 'checkbox', 
+    checked: true,
+    onChange: (e) => { showFill = e.target.checked; render(); }
+});
+const lblFill = createElement('label', {}, [chkFill, ' Show Fill']);
+const divFill = createElement('div', { className: 'control-group' }, [lblFill]);
 
-    window.addEventListener("resize", checkOrient);
-    checkOrient();
+const chkMirror = createElement('input', { 
+    type: 'checkbox', 
+    checked: true,
+    onChange: (e) => { isMirrored = e.target.checked; updateURL(); render(); }
+});
+const lblMirror = createElement('label', {}, [chkMirror, ' Mirrored']);
+const divMirror = createElement('div', { className: 'control-group' }, [lblMirror]);
+
+const toolbar = createElement('div', { id: 'toolbar' }, [
+    btnUndo, btnRedo, btnAdd, btnDelete, btnReset, btnCopyArray, btnExport, divSnap, divFill, divMirror
+]);
+
+function updateUI() {
+    btnUndo.disabled = historyIndex <= 0;
+    btnRedo.disabled = historyIndex >= history.length - 1;
+    btnDelete.disabled = !selectedPoint || P.length <= 1;
+    chkMirror.checked = isMirrored;
+}
+
+document.body.appendChild(container);
+document.body.appendChild(toolbar);
+
+P = parseURL(); 
+saveState();
+resizeCanvas();
+
+const hint = createElement('div', { id: 'landscape-hint' }, ['💡 Rotate to landscape for best experience']);
+document.body.appendChild(hint);
+
+const githubBtn = createElement('button', { 
+    id: 'github-link',
+    onClick: () => window.open('https://github.com/bacionejs/art', '_blank'),
+    title: 'View on GitHub'
+});
+
+const githubSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+githubSvg.setAttribute('viewBox', '0 0 24 24');
+githubSvg.setAttribute('fill', 'currentColor');
+githubSvg.innerHTML = '<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>';
+githubBtn.appendChild(githubSvg);
+document.body.appendChild(githubBtn);
+
+const checkOrient = () => {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    hint.classList.toggle('show', isPortrait);
 };
-</script>
+
+window.addEventListener("resize", checkOrient);
+checkOrient();
+
+}</script>
