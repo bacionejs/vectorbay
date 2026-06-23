@@ -47,6 +47,8 @@ A secondary purpose is the challenge of creating art with one continuous path. T
 
 The ultimate challenge is to use the minimum number of curves to create a shape. While frustrating at first, it can be very rewarding, like a puzzle.   
 
+By the way, AI doesn't know (yet) how to draw like this.
+
 For efficiency, the array is a half side, and the mirror is dynamically constructed. But you can also use it in non-mirrored mode (mermaid example)  
 
 Tips:
