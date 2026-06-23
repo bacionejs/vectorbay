@@ -63,7 +63,7 @@ Tips:
 ---
 
 You can share the array as is, or prepend the editor url, for example: 
-https://bacionejs.github.io/art?p=[[0,-4],[1,-8,10,-5,0,4]]  
+https://bacionejs.github.io/vectorbay?p=[[0,-4],[1,-8,10,-5,0,4]]  
 You can also just share the browser url but that is longer and uglier.  
 If you are sharing a non-mirrored work of art, include m=0 (see mermaid url)  
 
