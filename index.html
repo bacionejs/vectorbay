@@ -60,6 +60,7 @@ let isDragging = false;
 let showFill = true;
 let snapToGrid = true;
 let isMirrored = true;
+let showArtifacts = true;
 const GRID_CELLS = 20;
 
 function parseURL() {
@@ -209,24 +210,26 @@ function render() {
     ctx.save();
     ctx.translate(cx, cy);
 
-    // Draw Grid
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    const halfCells = GRID_CELLS / 2;
-    for (let i = -halfCells; i <= halfCells; i++) {
-        ctx.moveTo(i * scale, -cy); ctx.lineTo(i * scale, cy);
-        ctx.moveTo(-cx, i * scale); ctx.lineTo(cx, i * scale);
-    }
-    ctx.stroke();
+    if (showArtifacts) {
+        // Draw Grid
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const halfCells = GRID_CELLS / 2;
+        for (let i = -halfCells; i <= halfCells; i++) {
+            ctx.moveTo(i * scale, -cy); ctx.lineTo(i * scale, cy);
+            ctx.moveTo(-cx, i * scale); ctx.lineTo(cx, i * scale);
+        }
+        ctx.stroke();
 
-    // Draw Axes
-    ctx.strokeStyle = '#999';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, -cy); ctx.lineTo(0, cy);
-    ctx.moveTo(-cx, 0); ctx.lineTo(cx, 0);
-    ctx.stroke();
+        // Draw Axes
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -cy); ctx.lineTo(0, cy);
+        ctx.moveTo(-cx, 0); ctx.lineTo(cx, 0);
+        ctx.stroke();
+    }
 
     if (showFill) {
         ctx.fillStyle = '#000000';
@@ -248,37 +251,39 @@ function render() {
     ctx.lineWidth = 2;
     renderShape(ctx, P, false);
 
-    // Draw Handles & Points
-    ctx.lineWidth = 1;
-    for (let i = 0; i < P.length; i++) {
-        const seg = P[i];
-        
-        if (seg.length === 6 && i > 0) {
-            const prevX = P[i-1][P[i-1].length - 2] * scale;
-            const prevY = P[i-1][P[i-1].length - 1] * scale;
-            const cp1x = seg[0] * scale;
-            const cp1y = seg[1] * scale;
-            const cp2x = seg[2] * scale;
-            const cp2y = seg[3] * scale;
-            const ax = seg[4] * scale;
-            const ay = seg[5] * scale;
+    if (showArtifacts) {
+        // Draw Handles & Points
+        ctx.lineWidth = 1;
+        for (let i = 0; i < P.length; i++) {
+            const seg = P[i];
+            
+            if (seg.length === 6 && i > 0) {
+                const prevX = P[i-1][P[i-1].length - 2] * scale;
+                const prevY = P[i-1][P[i-1].length - 1] * scale;
+                const cp1x = seg[0] * scale;
+                const cp1y = seg[1] * scale;
+                const cp2x = seg[2] * scale;
+                const cp2y = seg[3] * scale;
+                const ax = seg[4] * scale;
+                const ay = seg[5] * scale;
 
-            ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(prevX, prevY); ctx.lineTo(cp1x, cp1y);
-            ctx.moveTo(ax, ay); ctx.lineTo(cp2x, cp2y);
-            ctx.stroke();
-            ctx.setLineDash([]);
+                ctx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(prevX, prevY); ctx.lineTo(cp1x, cp1y);
+                ctx.moveTo(ax, ay); ctx.lineTo(cp2x, cp2y);
+                ctx.stroke();
+                ctx.setLineDash([]);
 
-            drawPoint(cp1x, cp1y, '#0000ff');
-            drawPoint(cp2x, cp2y, '#0000ff');
+                drawPoint(cp1x, cp1y, '#0000ff');
+                drawPoint(cp2x, cp2y, '#0000ff');
+            }
+
+            const ax = seg[seg.length - 2] * scale;
+            const ay = seg[seg.length - 1] * scale;
+            const isSelected = selectedPoint && selectedPoint.segmentIndex === i && selectedPoint.type === 'anchor';
+            drawPoint(ax, ay, isSelected ? '#ffcc00' : '#ff0000');
         }
-
-        const ax = seg[seg.length - 2] * scale;
-        const ay = seg[seg.length - 1] * scale;
-        const isSelected = selectedPoint && selectedPoint.segmentIndex === i && selectedPoint.type === 'anchor';
-        drawPoint(ax, ay, isSelected ? '#ffcc00' : '#ff0000');
     }
 
     ctx.restore();
@@ -295,6 +300,8 @@ function drawPoint(x, y, color) {
 }
 
 function getHitPoint(clientX, clientY) {
+    if (!showArtifacts) return null; // Prevent interaction when points are hidden
+
     const rect = canvas.getBoundingClientRect();
     const pointerX = clientX - rect.left;
     const pointerY = clientY - rect.top;
@@ -344,7 +351,7 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
-    if (!isDragging || !selectedPoint) return;
+    if (!isDragging || !selectedPoint || !showArtifacts) return;
     const rect = canvas.getBoundingClientRect();
     const gridPos = toGrid(e.clientX - rect.left, e.clientY - rect.top);
     const seg = P[selectedPoint.segmentIndex];
@@ -377,7 +384,6 @@ function exportImage() {
     offCanvas.height = exportSize;
     const offCtx = offCanvas.getContext('2d');
 
-    // Calculate bounding box bounds to scale and center perfectly
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     
     P.forEach(seg => {
@@ -407,23 +413,19 @@ function exportImage() {
 
     if (minX === Infinity) { minX = -10; maxX = 10; minY = -10; maxY = 10; }
 
-    const padding = exportSize * 0.1; // 10% padding
+    const padding = exportSize * 0.1;
     const artWidth = (maxX - minX) || 1;
     const artHeight = (maxY - minY) || 1;
     
-    // Determine the ideal scale to fit the drawing onto the 2048x2048 canvas
     const scaleX = (exportSize - padding * 2) / artWidth;
     const scaleY = (exportSize - padding * 2) / artHeight;
     const scale = Math.min(scaleX, scaleY);
 
-    // Draw White Background
     offCtx.fillStyle = '#ffffff';
     offCtx.fillRect(0, 0, exportSize, exportSize);
     
-    // Move to center
     offCtx.translate(exportSize / 2, exportSize / 2);
     
-    // Offset for centering based on actual art bounds
     const centerXOffset = -((maxX + minX) / 2) * scale;
     const centerYOffset = -((maxY + minY) / 2) * scale;
     offCtx.translate(centerXOffset, centerYOffset);
@@ -441,7 +443,6 @@ function exportImage() {
         offCtx.restore();
     }
 
-    // Trigger download
     const link = document.createElement('a');
     link.download = 'bezier-art.png';
     link.href = offCanvas.toDataURL('image/png');
@@ -456,11 +457,9 @@ const btnAdd = createElement('button', { onClick: () => {
     if (idx < 0) return;
     
     const lastSeg = P[idx];
-    // Securely grab the final X and Y anchor coordinates regardless of segment length
     const lx = lastSeg[lastSeg.length - 2];
     const ly = lastSeg[lastSeg.length - 1];
     
-    // Always insert a valid 6-element cubic bezier segment
     P.splice(idx + 1, 0, [lx + 1, ly, lx + 2, ly, lx + 3, ly]);
     
     selectedPoint = { segmentIndex: idx + 1, type: 'anchor' };
@@ -488,7 +487,6 @@ const btnReset = createElement('button', { onClick: () => {
 const btnCopyArray = createElement('button', { onClick: () => {
     navigator.clipboard.writeText(JSON.stringify(P));
     
-    // Provide brief visual feedback
     const originalText = btnCopyArray.innerText;
     btnCopyArray.innerText = 'Copied!';
     setTimeout(() => btnCopyArray.innerText = originalText, 1500);
@@ -520,8 +518,16 @@ const chkMirror = createElement('input', {
 const lblMirror = createElement('label', {}, [chkMirror, ' Mirrored']);
 const divMirror = createElement('div', { className: 'control-group' }, [lblMirror]);
 
+const chkArtifacts = createElement('input', { 
+    type: 'checkbox', 
+    checked: true,
+    onChange: (e) => { showArtifacts = e.target.checked; render(); }
+});
+const lblArtifacts = createElement('label', {}, [chkArtifacts, ' Show Artifacts']);
+const divArtifacts = createElement('div', { className: 'control-group' }, [lblArtifacts]);
+
 const toolbar = createElement('div', { id: 'toolbar' }, [
-    btnUndo, btnRedo, btnAdd, btnDelete, btnReset, btnCopyArray, btnExport, divSnap, divFill, divMirror
+    btnUndo, btnRedo, btnAdd, btnDelete, btnReset, btnCopyArray, btnExport, divSnap, divFill, divMirror, divArtifacts
 ]);
 
 function updateUI() {
