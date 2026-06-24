@@ -16,18 +16,20 @@ canvas{
 	width:100dvmin;
 	aspect-ratio:1;
 	background:#fff;
+  border:1px solid black;
 }
 #toolbar{
 	display:flex;
-	background:#ddd;
+	background:silver;
 }
 #toolbar>div{
 	display:grid;
 	place-items:center;
-	border:1px solid #999;
+	border:1px solid black;
 	width:10cqb;
 	aspect-ratio:1;
 }
+#toolbar>div:active{background:gray}
 @media (orientation: portrait) {
 body{
 	flex-direction:column;
