@@ -1,11 +1,17 @@
 
-<img width="80%" src="https://github.com/user-attachments/assets/d4923e70-5d16-42bd-93dd-b632890aa6bd" />
 
-
+<img width="80%" src="https://github.com/user-attachments/assets/9a8b9407-376b-48fc-a961-d112602c9879" />
 
 ---
 
 👉[Try it](https://bacionejs.github.io/vectorbay)  
+
+---
+Toobar: add, delete, undo, redo, reset, copy, snap, fill, mirror, unclutter  
+add: adds after selected anchor  
+delete: deletes selected anchor  
+copy: copies array to clipboard  
+snap: snap to grid
 
 ---
 
@@ -33,7 +39,7 @@ https://bacionejs.github.io/vectorbay?p=[[0,-9],[1,-6,1,-4,2,-1],[2,0,3,0,3,1],[
 
 ---
 
-Mermaid (non-mirrored)  
+Mermaid (use m=0 for non-mirrored)  
 
 <img width="20%" src="https://github.com/user-attachments/assets/32b4b1c7-83b8-4593-a607-901ec4178a30" />  
 
@@ -54,20 +60,6 @@ For efficiency, the array is a half side, and the mirror is dynamically construc
 Tips:
 - identify the s-curves in the image you have in mind (see mermaid).
 - create holes by crossing paths (see elephant eyes).
-
----
-
-`Add` adds after selected anchor  
-`Delete` deletes selected anchor  
-`Copy` copies array to clipboard  
-...plus undo, redo, reset, export, snap, fill and mirror  
-
----
-
-You can share the array as is, or prepend the editor url, for example: 
-https://bacionejs.github.io/vectorbay?p=[[0,-4],[1,-8,10,-5,0,4]]  
-You can also just share the browser url but that is longer and uglier.  
-If you are sharing a non-mirrored work of art, include m=0 (see mermaid url)  
 
 ---
 
