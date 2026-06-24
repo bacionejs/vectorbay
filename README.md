@@ -61,7 +61,7 @@ Tips:
 
 ---
 
-Example of including in size constrained game/demo
+Example of including array in size constrained game/demo
 ```
 <canvas id="C"></canvas> <script> 
 let X=C.getContext("2d");
