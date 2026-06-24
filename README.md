@@ -47,7 +47,7 @@ https://bacionejs.github.io/vectorbay?m=0&p=[[-8,0],[-8,0,-9,-1,-10,-4],[-4,-2,-
 
 ---
 
-The purpose of this editor is to create simple art for your game or demo with minimal code.  
+The purpose of this editor is to create simple art for your game with minimal code.  
 
 A secondary purpose is the challenge of creating art with one continuous path. This is the reason there is no multi-shape support.  
 
@@ -61,7 +61,7 @@ Tips:
 
 ---
 
-Example of including array in size constrained game/demo
+Example of including array in your size constrained game
 ```
 <canvas id="C"></canvas> <script> 
 let X=C.getContext("2d");
