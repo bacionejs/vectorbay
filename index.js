@@ -71,26 +71,26 @@ function draw(){
   let P=new Path2D();
   p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));
   if(st[9])P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
-  if(st[8]){X.fillStyle="#000";X.fill(P);}
-  X.lineWidth=2/S;X.strokeStyle="#000";X.stroke(P);
+  if(st[8]){X.fillStyle="black";X.fill(P);}
   if(!st[10]){
+    X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
     let dp=(x,y,c,i,t)=>{
-      X.fillStyle=(sel.i===i&&sel.t===t)?"#0f0":c;
+      X.fillStyle=(sel.i===i&&sel.t===t)?"lime":c;
       X.beginPath();X.arc(x,y,6/S,0,7);X.fill();
     };
     let ln=(x1,y1,x2,y2)=>{
-      X.lineWidth=1.5/S;X.strokeStyle="#999";
+      X.lineWidth=1.5/S;X.strokeStyle="purple";
       X.beginPath();X.moveTo(x1,y1);X.lineTo(x2,y2);X.stroke();
     };
     p.forEach((s,i)=>{
-      if(i===0)dp(s[0],s[1],"#f00",0,0);
+      if(i===0)dp(s[0],s[1],"red",0,0);
       else{
         let r=p[i-1],px=r.length>2?r[4]:r[0],py=r.length>2?r[5]:r[1];
         ln(px,py,s[0],s[1]);
         ln(s[4],s[5],s[2],s[3]);
-        dp(s[0],s[1],"#f9c",i,1);
-        dp(s[2],s[3],"#f9c",i,2);
-        dp(s[4],s[5],"#f00",i,0);
+        dp(s[0],s[1],"orange",i,1);
+        dp(s[2],s[3],"orange",i,2);
+        dp(s[4],s[5],"red",i,0);
       }
     });
   }
