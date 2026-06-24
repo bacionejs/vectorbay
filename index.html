@@ -26,30 +26,12 @@ canvas{
 	display:grid;
 	place-items:center;
 	border:1px solid black;
-	width:10cqb;
+	width:10cqmin;
 	aspect-ratio:1;
 }
 #toolbar>div:active{background:gray}
-@media (orientation: portrait) {
-body{
-	flex-direction:column;
-}
-#toolbar{
-	width:100cqmin;
-	height:10cqmin;
-	flex-direction:row;
-}
-}
-@media (orientation: landscape) {
-body{
-	flex-direction:row;
-}
-#toolbar{
-	width:10cqmin;
-	height:100cqmin;
-	flex-direction:column;
-}
-}
+@media(orientation:portrait ){body{flex-direction:column}#toolbar{flex-direction:row}}
+@media(orientation:landscape){body{flex-direction:row   }#toolbar{flex-direction:column}}
 </style>
 <div id="toolbar"></div>
 <canvas id="C"></canvas>
