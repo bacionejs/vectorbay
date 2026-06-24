@@ -20,7 +20,7 @@ let svg=[
 "M2 5 h6",//delete
 "M10 5 Q5 0  0 7 M0  2 v5 h5",//undo
 "M0  5 Q5 0 10 7 M10 2 v5 h-5",//redo
-"M8.696 3.469 m0 -3 v3 h-3 m3 0 A4 4 0 1 0 8.696 6.531",//reset
+"M9 3 m0 -3 v3 h-3 m3 0 A4 4 0 1 0 9 6",//reset
 "M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",//copy
 "M3 1 v8 M7 1 v8 M1 3 h8 M1 7 h8",//snap
 "M5 6 m-3 -3 l3 3 l3 -3",//fill
