@@ -11,7 +11,8 @@
 > [!WARNING]
 > Only supports a continuous path  
 
-Example of including array in your game
+Draw your shape, click `copy` and paste the shape into your code.  
+Example code:
 ```
 <canvas id="C"></canvas> <script> 
 let X=C.getContext("2d");
