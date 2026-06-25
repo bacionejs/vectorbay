@@ -35,8 +35,10 @@ for(let i=1;i<=10;i++){
   btns.push(b);
   b.onclick=()=>{
     if((i===1||i===2)&&sel.i<0)return alert("Select an anchor first");
+    if(i===2&&(sel.i===0))return alert("Starting point cannot be deleted");
+    if(i===2&&(p.length<3))return alert("Must be at least two points");
     if(i===1){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}
-    if(i===2){p.splice(sel.i,1);sel.i--;save();}
+    if(i===2&&sel.i>-1){p.splice(sel.i,1);sel={i:-1,t:-1};save();}
     if(i===3&&hIdx>0)p=JSON.parse(hist[--hIdx]);
     if(i===4&&hIdx<hist.length-1)p=JSON.parse(hist[++hIdx]);
     if(i===5){p=JSON.parse(defP);save();}
@@ -119,6 +121,7 @@ C.onpointermove=e=>{
   if(!drag)return;
   let x=tx(e),y=ty(e),s=p[sel.i];
   if(st[7]){x=Math.round(x);y=Math.round(y);}
+  x=Math.max(-10,Math.min(10,x)),y=Math.max(-10,Math.min(10,y));
   if(sel.i===0){s[0]=x;s[1]=y;}
   else{
     if(sel.t===0){s[4]=x;s[5]=y;}
