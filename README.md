@@ -39,7 +39,7 @@ https://bacionejs.github.io/vectorbay?p=[[0,-4],[1,-8,10,-5,0,4]]
 
 ---
 
-Elephant (eyes were created by overlapping curves) 
+Elephant (eyes were created by overlapping paths) 
 
 <img width="20%" src="https://github.com/user-attachments/assets/e97100b8-6cd7-4a1e-b334-ecc0109ea5f5" />  
 
@@ -55,7 +55,7 @@ https://bacionejs.github.io/vectorbay?p=[[0,-9],[1,-6,1,-4,2,-1],[2,0,3,0,3,1],[
 
 ---
 
-Mermaid (use m=0 for non-mirrored)  
+Mermaid (use m=0 for non-mirrored shape)  
 
 <img width="20%" src="https://github.com/user-attachments/assets/32b4b1c7-83b8-4593-a607-901ec4178a30" />  
 
