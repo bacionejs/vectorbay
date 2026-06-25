@@ -14,7 +14,7 @@ copy: copies array to clipboard
 snap: snap to grid  
 
 > [!WARNING]
-> Only supports a single continuous curved path  
+> Only supports a continuous path  
 
 Example of including array in your game
 ```
