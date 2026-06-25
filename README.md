@@ -8,12 +8,6 @@
 
 ---
 
-Toobar: add, delete, undo, redo, reset, copy, snap, fill, mirror, unclutter  
-add: adds after selected anchor  
-delete: deletes selected anchor  
-copy: copies array to clipboard  
-snap: snap to grid  
-
 > [!WARNING]
 > Only supports a continuous path  
 
