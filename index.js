@@ -34,12 +34,13 @@ for(let i=1;i<=10;i++){
   toolbar.appendChild(b);
   btns.push(b);
   b.onclick=()=>{
-    if(i===1&&sel.i>-1){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}
-    if(i===2&&sel.i>0){p.splice(sel.i,1);sel.i--;save();}
+    if((i===1||i===2)&&sel.i<0)return alert("Select an anchor first");
+    if(i===1){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}
+    if(i===2){p.splice(sel.i,1);sel.i--;save();}
     if(i===3&&hIdx>0)p=JSON.parse(hist[--hIdx]);
     if(i===4&&hIdx<hist.length-1)p=JSON.parse(hist[++hIdx]);
     if(i===5){p=JSON.parse(defP);save();}
-    if(i===6)navigator.clipboard.writeText(`https://bacionejs.github.io/vectorbay?${!st[9]?"m=0&":""}p=${JSON.stringify(p)}`);
+    if(i===6){let url=`https://bacionejs.github.io/vectorbay?${!st[9]?"m=0&":""}p=${JSON.stringify(p)}`;alert("copied: "+url);navigator.clipboard.writeText(url);}
     if(i>6)st[i]^=1;
     draw();
   };
