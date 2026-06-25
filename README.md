@@ -11,23 +11,10 @@ Toobar: add, delete, undo, redo, reset, copy, snap, fill, mirror, unclutter
 add: adds after selected anchor  
 delete: deletes selected anchor  
 copy: copies array to clipboard  
-snap: snap to grid
+snap: snap to grid  
 
----
-
-The purpose of this editor is to create simple art for your game with minimal code.  
-
-A secondary purpose is the challenge of creating art with one continuous path. This is the reason there is no multi-shape support.  
-
-The ultimate challenge is to use the minimum number of curves to create a shape. While frustrating at first, it can be very rewarding, like a puzzle.   
-
-For efficiency, the array is a half side, and the mirror is dynamically constructed. But you can also use it in non-mirrored mode (mermaid example)  
-
-Tips:
-- identify the s-curves in the image you have in mind (see mermaid).
-- create holes by crossing paths (see elephant eyes).
-
----
+> [!WARNING]
+> Only supports a single continuous curved path  
 
 Example of including array in your size constrained game
 ```
