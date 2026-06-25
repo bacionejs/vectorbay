@@ -16,7 +16,7 @@ snap: snap to grid
 > [!WARNING]
 > Only supports a single continuous curved path  
 
-Example of including array in your size constrained game
+Example of including array in your game
 ```
 <canvas id="C"></canvas> <script> 
 let X=C.getContext("2d");
@@ -39,7 +39,7 @@ https://bacionejs.github.io/vectorbay?p=[[0,-4],[1,-8,10,-5,0,4]]
 
 ---
 
-Elephant  
+Elephant (eyes were created by overlapping curves) 
 
 <img width="20%" src="https://github.com/user-attachments/assets/e97100b8-6cd7-4a1e-b334-ecc0109ea5f5" />  
 
