@@ -8,31 +8,25 @@ let toolbar=D.getElementById("toolbar")
 let tx=e=>(e.offsetX-W/2)/S;
 let ty=e=>(e.offsetY-H/2)/S;
 let save=()=>{hist=hist.slice(0,hIdx+1);hist.push(JSON.stringify(p));hIdx++;};save();
-function element(tag,parent){return (parent||document.body).appendChild(document.createElement(tag))}
+function element(tag,p=document.body,c){let e=p.appendChild(document.createElement(tag));e.className=c;return e;}
 function grid(){ X.lineWidth=1/S; for(let i=-10;i<11;i++) X.strokeStyle=i?"#eee":"#ccc", X.beginPath(), X.moveTo(i,-10),X.lineTo(i,10), X.moveTo(-10,i),X.lineTo(10,i), X.stroke(); }
+let url1="https://github.com/bacionejs/vectorbay",url2="https://bacionejs.github.io/vectorbay?";
 
 let keys=[
-
-{d:"M0 10 v-6 l5 -4 l5 4 v6 z",f:function home(){window.open("https://github.com/bacionejs/vectorbay", "_blank")}},
-{d:"M2 5 h6 M5 2 v6",f:function add(){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}},
-{d:"M2 5 h6",f:function del(){p.splice(sel.i,1);sel={i:-1,t:-1};save();}},
-{d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",f:function undo(){p=JSON.parse(hist[--hIdx])}},
-{d:"M0  5 Q5 0 10 7 m0 -4 v4 h-4",f:function redo(){p=JSON.parse(hist[++hIdx])}},
-{d:"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",f:function copy(){
-navigator.clipboard.writeText("https://bacionejs.github.io/vectorbay?"+
-(!keys.mirror?"m=0&":"")+
-"p="+String.fromCharCode(...p.flat(Infinity).map(n => n + 107)));
-}},
-{d:"M3 1 v8 M7 1 v8 M1 3 h8 M1 7 h8",f:function snap(){keys[this.f.name]^=1;}},
-{d:"M5 6 m-3 -3 l3 3 l3 -3",f:function fill(){keys[this.f.name]^=1;}},
-{d:"M4 5 m3 -3 l-3 3 l3 3",f:function mirror(){keys[this.f.name]^=1;}},
-{d:"M1 5 A4 4 0 1 0 9 5 A4 4 0 1 0 1 5",f:function unclutter(){keys[this.f.name]^=1;}},
-
+{d:"M0 10 v-6 l5 -4 l5 4 v6 z",            f:function home(){window.open( url1, "_blank")}},
+{d:"M2 5 h6 M5 2 v6",                      f:function add(){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}},
+{d:"M2 5 h6",                              f:function del(){p.splice(sel.i,1);sel={i:-1,t:-1};save();}},
+{d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",          f:function undo(){p=JSON.parse(hist[--hIdx])}},
+{d:"M0  5 Q5 0 10 7 m0 -4 v4 h-4",         f:function redo(){p=JSON.parse(hist[++hIdx])}},
+{d:"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",  f:function copy(){navigator.clipboard.writeText(url2+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...p.flat(Infinity).map(n => n + 107)));}},
+{d:"M3 1 v8 M7 1 v8 M1 3 h8 M1 7 h8",      f:function snap(){keys[this.f.name]^=1;}},
+{d:"M5 6 m-3 -3 l3 3 l3 -3",               f:function fill(){keys[this.f.name]^=1;}},
+{d:"M4 5 m3 -3 l-3 3 l3 3",                f:function mirror(){keys[this.f.name]^=1;}},
+{d:"M1 5 A4 4 0 1 0 9 5 A4 4 0 1 0 1 5",   f:function unclutter(){keys[this.f.name]^=1;}},
 ];
 
-keys.forEach(k=>{let e=element("div",toolbar);e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`;e.onclick=()=>{k.f();draw();};k.e=e;})
-keys.mirror^=M;keys.fill^=1;keys.snap^=1;
-window.onresize=draw;setTimeout(draw,0);
+keys.forEach(k=>{let e=element("div",toolbar,"keys");e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`;e.onclick=()=>{k.f();draw();};e.ref=k;k.e=e;})
+keys.mirror^=M;keys.fill^=1;keys.snap^=1;window.onresize=draw;setTimeout(draw,0);
 
 C.onpointerdown=e=>{let x=tx(e),y=ty(e),md=0.6,b={i:-1,t:-1};let c=(px,py,i,t)=>{let d=Math.hypot(px-x,py-y);if(d<md){md=d;b={i,t};}};
   if(!keys.unclutter){p.forEach((s,i)=>{if(i===0)c(s[0],s[1],0,0);else{c(s[4],s[5],i,0);c(s[0],s[1],i,1);c(s[2],s[3],i,2);}});}
@@ -44,7 +38,6 @@ C.onpointermove=e=>{if(!drag)return;let x=tx(e),y=ty(e),s=p[sel.i];
   draw();
 };
 C.onpointerup=()=>{if(drag){drag=0;save();}};
-
 
 function points(P){
   X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
