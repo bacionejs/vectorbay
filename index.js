@@ -5,14 +5,9 @@ let p=[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(
 let hist=[],hIdx=-1,sel={i:-1,t:-1},drag=0;
 let C=D.getElementById("C"),X=C.getContext("2d"),W,H,S;
 let toolbar=D.getElementById("toolbar")
-
-let save=()=>{
-hist=hist.slice(0,hIdx+1);
-hist.push(JSON.stringify(p));
-hIdx++;
-};
-save();
-
+let tx=e=>(e.offsetX-W/2)/S;
+let ty=e=>(e.offsetY-H/2)/S;
+let save=()=>{hist=hist.slice(0,hIdx+1);hist.push(JSON.stringify(p));hIdx++;};save();
 function element(tag,parent){return (parent||document.body).appendChild(document.createElement(tag))}
 
 let keys=[
@@ -23,7 +18,7 @@ let keys=[
 {d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",f:function undo(){p=JSON.parse(hist[--hIdx])}},
 {d:"M0  5 Q5 0 10 7 m0 -4 v4 h-4",f:function redo(){p=JSON.parse(hist[++hIdx])}},
 {d:"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",f:function copy(){
-navigator.clipboard.writeText("https://github.com/bacionejs/vectorbay?"+
+navigator.clipboard.writeText("https://bacionejs.github.io/vectorbay?"+
 (!keys.mirror?"m=0&":"")+
 "p="+String.fromCharCode(...p.flat(Infinity).map(n => n + 107)));
 }},
@@ -45,58 +40,9 @@ keys.mirror^=M;
 keys.fill^=1;
 keys.snap^=1;
 
-function draw(){
-  W=C.width=C.clientWidth;
-  H=C.height=C.clientHeight;
-  S=W/20;
-  X.clearRect(0,0,W,H);
-  X.save();
-  X.translate(W/2,H/2);
-  X.scale(S,S);
-  keys.forEach(k=>k.e.style.background=keys[k.f.name]?"gray":"")
-  if(!keys.unclutter){
-    X.lineWidth=1/S;X.strokeStyle="#eee";X.beginPath();
-    for(let i=-10;i<=10;i++){
-      X.moveTo(i,-10);X.lineTo(i,10);
-      X.moveTo(-10,i);X.lineTo(10,i);
-    }
-    X.stroke();
-    X.strokeStyle="#ccc";X.beginPath();
-    X.moveTo(0,-10);X.lineTo(0,10);
-    X.moveTo(-10,0);X.lineTo(10,0);
-    X.stroke();
-  }
-  let P=new Path2D();
-  p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));
-  if(keys.mirror)P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
-  if(keys.fill){X.fillStyle="black";X.fill(P);}
-  if(!keys.unclutter){
-    X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
-    let dp=(x,y,c,i,t)=>{
-      X.fillStyle=(sel.i===i&&sel.t===t)?"lime":c;
-      X.beginPath();X.arc(x,y,6/S,0,7);X.fill();
-    };
-    let ln=(x1,y1,x2,y2)=>{
-      X.lineWidth=1.5/S;X.strokeStyle="purple";
-      X.beginPath();X.moveTo(x1,y1);X.lineTo(x2,y2);X.stroke();
-    };
-    p.forEach((s,i)=>{
-      if(i===0)dp(s[0],s[1],"red",0,0);
-      else{
-        let r=p[i-1],px=r.length>2?r[4]:r[0],py=r.length>2?r[5]:r[1];
-        ln(px,py,s[0],s[1]);
-        ln(s[4],s[5],s[2],s[3]);
-        dp(s[0],s[1],"orange",i,1);
-        dp(s[2],s[3],"orange",i,2);
-        dp(s[4],s[5],"red",i,0);
-      }
-    });
-  }
-  X.restore();
-}
+window.onresize=draw;
+setTimeout(draw,0);
 
-let tx=e=>(e.offsetX-W/2)/S;
-let ty=e=>(e.offsetY-H/2)/S;
 C.onpointerdown=e=>{
   let x=tx(e),y=ty(e),md=0.6,b={i:-1,t:-1};
   let c=(px,py,i,t)=>{
@@ -127,5 +73,54 @@ C.onpointermove=e=>{
   draw();
 };
 C.onpointerup=()=>{if(drag){drag=0;save();}};
-window.onresize=draw;
-setTimeout(draw,0);
+
+function grid(){
+ X.lineWidth=1/S
+ for(let i=-10;i<11;i++)
+  X.strokeStyle=i?"#eee":"#ccc",
+  X.beginPath(),
+  X.moveTo(i,-10),X.lineTo(i,10),
+  X.moveTo(-10,i),X.lineTo(10,i),
+  X.stroke()
+}
+
+function points(P){
+  X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
+  let dp=(x,y,c,i,t)=>{
+    X.fillStyle=(sel.i===i&&sel.t===t)?"lime":c;
+    X.beginPath();X.arc(x,y,6/S,0,7);X.fill();
+  };
+  let ln=(x1,y1,x2,y2)=>{
+    X.lineWidth=1.5/S;X.strokeStyle="purple";
+    X.beginPath();X.moveTo(x1,y1);X.lineTo(x2,y2);X.stroke();
+  };
+  p.forEach((s,i)=>{
+    if(i===0)dp(s[0],s[1],"red",0,0);
+    else{
+      let r=p[i-1],px=r.length>2?r[4]:r[0],py=r.length>2?r[5]:r[1];
+      ln(px,py,s[0],s[1]);
+      ln(s[4],s[5],s[2],s[3]);
+      dp(s[0],s[1],"orange",i,1);
+      dp(s[2],s[3],"orange",i,2);
+      dp(s[4],s[5],"red",i,0);
+    }
+  });
+}
+
+function draw(){
+  W=C.width=C.clientWidth;
+  H=C.height=C.clientHeight;
+  S=W/20;
+  X.clearRect(0,0,W,H);
+  X.save();
+  X.translate(W/2,H/2);
+  X.scale(S,S);
+  keys.forEach(k=>k.e.style.background=keys[k.f.name]?"gray":"")
+  if(!keys.unclutter){ grid(); }
+  let P=new Path2D();
+  p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));
+  if(keys.mirror)P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
+  if(keys.fill){X.fillStyle="black";X.fill(P);}
+  if(!keys.unclutter){ points(P); }
+  X.restore();
+}
