@@ -1,12 +1,14 @@
 let D=document,U=new URLSearchParams(location.search);
-let defP="[[0,-4],[1,-8,10,-5,0,4]]";
-let p=JSON.parse(U.get("p")||defP);
 let M=U.get("m")!==null?+U.get("m"):1;
-
-let st=[0,0,0,0,0,0,0,1,1,M,0];
+let s=U.get("p")||"kglcufko";
+let p;
+if(s[0]=="[")
+  p=JSON.parse(s)
+else
+  p=[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));
 let hist=[],hIdx=-1,sel={i:-1,t:-1},drag=0;
 let C=D.getElementById("C"),X=C.getContext("2d"),W,H,S;
-let toolbar=D.getElementById("toolbar"),btns=[];
+let toolbar=D.getElementById("toolbar")
 
 let save=()=>{
 hist=hist.slice(0,hIdx+1);
@@ -14,51 +16,49 @@ hist.push(JSON.stringify(p));
 hIdx++;
 };
 save();
-let svg=[
-"M0 10 v-6 l5 -4 l5 4 v6 z",
-"M2 5 h6 M5 2 v6",//add
-"M2 5 h6",//delete
-"M10 5 Q5 0  0 7 m0 -4 v4 h4",//undo
-"M0  5 Q5 0 10 7 m0 -4 v4 h-4",//redo
-"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",//copy
-"M3 1 v8 M7 1 v8 M1 3 h8 M1 7 h8",//snap
-"M5 6 m-3 -3 l3 3 l3 -3",//fill
-"M4 5 m3 -3 l-3 3 l3 3",//mirror
-"M1 5 A4 4 0 1 0 9 5 A4 4 0 1 0 1 5",//unclutter
+
+function element(tag,parent){return (parent||document.body).appendChild(document.createElement(tag))}
+
+let keys=[
+
+{d:"M0 10 v-6 l5 -4 l5 4 v6 z",f:function home(){window.open("https://github.com/bacionejs/vectorbay", "_blank")}},
+{d:"M2 5 h6 M5 2 v6",f:function add(){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}},
+{d:"M2 5 h6",f:function del(){p.splice(sel.i,1);sel={i:-1,t:-1};save();}},
+{d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",f:function undo(){p=JSON.parse(hist[--hIdx])}},
+{d:"M0  5 Q5 0 10 7 m0 -4 v4 h-4",f:function redo(){p=JSON.parse(hist[++hIdx])}},
+{d:"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",f:function copy(){
+navigator.clipboard.writeText("http://127.0.0.1:8080/myapps/dev/vectorbay?"+
+(!keys.mirror?"m=0&":"")+
+"p="+String.fromCharCode(...p.flat(Infinity).map(n => n + 107)));
+}},
+{d:"M3 1 v8 M7 1 v8 M1 3 h8 M1 7 h8",f:function snap(){keys[this.f.name]^=1;}},
+{d:"M5 6 m-3 -3 l3 3 l3 -3",f:function fill(){keys[this.f.name]^=1;}},
+{d:"M4 5 m3 -3 l-3 3 l3 3",f:function mirror(){keys[this.f.name]^=1;}},
+{d:"M1 5 A4 4 0 1 0 9 5 A4 4 0 1 0 1 5",f:function unclutter(){keys[this.f.name]^=1;}},
+
 ];
 
-for(let i=1;i<=10;i++){
-  let b=D.createElement("div");
-  b.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${svg[i-1]}" fill=none stroke="currentColor"/></svg>`
-  toolbar.appendChild(b);
-  btns.push(b);
-  b.onclick=()=>{
-    if(i===1)return window.open("https://github.com/bacionejs/vectorbay", "_blank");
-    if((i===2||i===3)&&sel.i<0)return alert("Select an anchor first");
-    if(i===3&&(sel.i===0))return alert("Starting point cannot be deleted");
-    if(i===3&&(p.length<3))return alert("Must be at least two points");
-    if(i===2){p.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}
-    if(i===3&&sel.i>-1){p.splice(sel.i,1);sel={i:-1,t:-1};save();}
-    if(i===4&&hIdx>0)p=JSON.parse(hist[--hIdx]);
-    if(i===5&&hIdx<hist.length-1)p=JSON.parse(hist[++hIdx]);
-    if(i===6){let url=`https://bacionejs.github.io/vectorbay?${!st[9]?"m=0&":""}p=${JSON.stringify(p)}`;alert("copied: "+url);navigator.clipboard.writeText(url);}
-    if(i>6)st[i]^=1;
-    draw();
-  };
-}
+keys.forEach(k=>{
+let e=element("div",toolbar);
+e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`
+e.onclick=()=>{k.f();draw();}
+k.e=e;
+})
+
+keys.mirror^=M;
+keys.fill^=1;
+keys.snap^=1;
 
 function draw(){
   W=C.width=C.clientWidth;
   H=C.height=C.clientHeight;
   S=W/20;
-  for(let i=7;i<=10;i++){
-    btns[i-1].style.background=st[i]?"gray":"";
-  }
   X.clearRect(0,0,W,H);
   X.save();
   X.translate(W/2,H/2);
   X.scale(S,S);
-  if(!st[10]){
+  keys.forEach(k=>k.e.style.background=keys[k.f.name]?"gray":"")
+  if(!keys.unclutter){
     X.lineWidth=1/S;X.strokeStyle="#eee";X.beginPath();
     for(let i=-10;i<=10;i++){
       X.moveTo(i,-10);X.lineTo(i,10);
@@ -72,9 +72,9 @@ function draw(){
   }
   let P=new Path2D();
   p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));
-  if(st[9])P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
-  if(st[8]){X.fillStyle="black";X.fill(P);}
-  if(!st[10]){
+  if(keys.mirror)P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
+  if(keys.fill){X.fillStyle="black";X.fill(P);}
+  if(!keys.unclutter){
     X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
     let dp=(x,y,c,i,t)=>{
       X.fillStyle=(sel.i===i&&sel.t===t)?"lime":c;
@@ -98,6 +98,7 @@ function draw(){
   }
   X.restore();
 }
+
 let tx=e=>(e.offsetX-W/2)/S;
 let ty=e=>(e.offsetY-H/2)/S;
 C.onpointerdown=e=>{
@@ -106,7 +107,7 @@ C.onpointerdown=e=>{
     let d=Math.hypot(px-x,py-y);
     if(d<md){md=d;b={i,t};}
   };
-  if(!st[10]){
+  if(!keys.unclutter){
     p.forEach((s,i)=>{
       if(i===0)c(s[0],s[1],0,0);
       else{c(s[4],s[5],i,0);c(s[0],s[1],i,1);c(s[2],s[3],i,2);}
@@ -119,7 +120,7 @@ C.onpointerdown=e=>{
 C.onpointermove=e=>{
   if(!drag)return;
   let x=tx(e),y=ty(e),s=p[sel.i];
-  if(st[7]){x=Math.round(x);y=Math.round(y);}
+  if(keys.snap){x=Math.round(x);y=Math.round(y);}
   x=Math.max(-10,Math.min(10,x)),y=Math.max(-10,Math.min(10,y));
   if(sel.i===0){s[0]=x;s[1]=y;}
   else{
