@@ -1,11 +1,7 @@
 let D=document,U=new URLSearchParams(location.search);
 let M=U.get("m")!==null?+U.get("m"):1;
 let s=U.get("p")||"kglcufko";
-let p;
-if(s[0]=="[")
-  p=JSON.parse(s)
-else
-  p=[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));
+let p=[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));
 let hist=[],hIdx=-1,sel={i:-1,t:-1},drag=0;
 let C=D.getElementById("C"),X=C.getContext("2d"),W,H,S;
 let toolbar=D.getElementById("toolbar")
@@ -27,7 +23,7 @@ let keys=[
 {d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",f:function undo(){p=JSON.parse(hist[--hIdx])}},
 {d:"M0  5 Q5 0 10 7 m0 -4 v4 h-4",f:function redo(){p=JSON.parse(hist[++hIdx])}},
 {d:"M3 8 h-2 v-8 h6 v2 h2 v8 h-6 v-8 h6",f:function copy(){
-navigator.clipboard.writeText("http://127.0.0.1:8080/myapps/dev/vectorbay?"+
+navigator.clipboard.writeText("https://github.com/bacionejs/vectorbay?"+
 (!keys.mirror?"m=0&":"")+
 "p="+String.fromCharCode(...p.flat(Infinity).map(n => n + 107)));
 }},
