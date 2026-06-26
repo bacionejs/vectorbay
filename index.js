@@ -29,7 +29,7 @@ keys.forEach(k=>{let e=element("div",toolbar,"keys");e.innerHTML=`<svg viewBox="
 keys.mirror^=M;keys.fill^=1;keys.snap^=1;window.onresize=draw;setTimeout(draw,0);
 
 C.onpointerdown=e=>{let x=tx(e),y=ty(e),md=0.6,b={i:-1,t:-1};let c=(px,py,i,t)=>{let d=Math.hypot(px-x,py-y);if(d<md){md=d;b={i,t};}};
-  if(!keys.unclutter){p.forEach((s,i)=>{if(i===0)c(s[0],s[1],0,0);else{c(s[4],s[5],i,0);c(s[0],s[1],i,1);c(s[2],s[3],i,2);}});}
+  p.forEach((s,i)=>{if(i===0)c(s[0],s[1],0,0);else{c(s[4],s[5],i,0);c(s[0],s[1],i,1);c(s[2],s[3],i,2);}});
   sel=b;if(sel.i>-1)drag=1;draw();
 };
 C.onpointermove=e=>{if(!drag)return;let x=tx(e),y=ty(e),s=p[sel.i];
@@ -39,6 +39,16 @@ C.onpointermove=e=>{if(!drag)return;let x=tx(e),y=ty(e),s=p[sel.i];
 };
 C.onpointerup=()=>{if(drag){drag=0;save();}};
 
+function draw(){
+  W=C.width=C.clientWidth;H=C.height=C.clientHeight;S=W/20;X.clearRect(0,0,W,H);X.save();X.translate(W/2,H/2);X.scale(S,S);
+  keys.forEach(k=>k.e.style.background=keys[k.f.name]?"gray":"")
+  if(!keys.unclutter){ grid(); }
+  let P=new Path2D();p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));if(keys.mirror)P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
+  if(keys.fill){X.fillStyle="black";X.fill(P);}
+  if(!keys.unclutter){ points(P); }
+  X.restore();
+}
+
 function points(P){
   X.lineWidth=2/S;X.strokeStyle="blue";X.stroke(P);
   let dp=(x,y,c,i,t)=>{X.fillStyle=(sel.i===i&&sel.t===t)?"lime":c;X.beginPath();X.arc(x,y,6/S,0,7);X.fill();};
@@ -47,16 +57,4 @@ function points(P){
     if(i===0)dp(s[0],s[1],"red",0,0);
     else{let r=p[i-1],px=r.length>2?r[4]:r[0],py=r.length>2?r[5]:r[1];ln(px,py,s[0],s[1]);ln(s[4],s[5],s[2],s[3]);dp(s[0],s[1],"orange",i,1);dp(s[2],s[3],"orange",i,2);dp(s[4],s[5],"red",i,0);}
   });
-}
-
-function draw(){
-  W=C.width=C.clientWidth;H=C.height=C.clientHeight;S=W/20;X.clearRect(0,0,W,H);X.save();X.translate(W/2,H/2);X.scale(S,S);
-  keys.forEach(k=>k.e.style.background=keys[k.f.name]?"gray":"")
-  if(!keys.unclutter){ grid(); }
-  let P=new Path2D();
-  p.forEach((s,i)=>P[i?"bezierCurveTo":"moveTo"](...s));
-  if(keys.mirror)P.addPath(P,new DOMMatrix([-1,0,0,1,0,0]));
-  if(keys.fill){X.fillStyle="black";X.fill(P);}
-  if(!keys.unclutter){ points(P); }
-  X.restore();
 }
