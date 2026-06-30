@@ -1,4 +1,4 @@
-let U=new URLSearchParams(location.search),M=U.get("m")||1,A=decode(U.get("p")||"kglcufko"); 
+let U=new URLSearchParams(location.search),M=U.get("m")||1,A=decode(U.get("p")||"[[0,-4],[1,-8,10,-5,0,4]]"); 
 let hist=[],sel={i:-1,t:-1},drag=0,tx=e=>(e.offsetX-W/2)/S,ty=e=>(e.offsetY-H/2)/S,save=()=>{hist.splice(hist.i+1);hist.push(JSON.stringify(A));hist.i++;};
 let toolbar=element("div",document.body,"toolbar"),C=element("canvas"),X=C.getContext("2d"),W,H,S,{round,max,min,hypot}=Math;
 C.onpointerdown=e=>{sel=getpoint(tx(e),ty(e));drag=sel.i>-1;draw();}; C.onpointerup=()=>{if(drag){drag=0;save();}};
@@ -17,8 +17,8 @@ let keys=[
 ];
 keys.forEach(k=>{let e=element("div",toolbar,"keys");e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`;e.onclick=()=>{k.f();draw();};e.ref=k;k.e=e;})
 keys.mirror^=M;keys.fill^=1;keys.snap^=1;window.onresize=draw;setTimeout(draw,0);hist.i=-1;save();
-function decode(s){return[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));}
-// function decode(s){return JSON.parse(s);}
+// function decode(s){return[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));}
+function decode(s){return JSON.parse(s);}
 // function encode(){return"https://bacionejs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...A.flat(Infinity).map(n => n + 107));}
 // function encode(){return JSON.stringify(A);}
 // function encode(){return"http://127.0.0.1:8080/myapps/dev/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...A.flat(Infinity).map(n => n + 107));}
