@@ -18,8 +18,11 @@ let keys=[
 keys.forEach(k=>{let e=element("div",toolbar,"keys");e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`;e.onclick=()=>{k.f();draw();};e.ref=k;k.e=e;})
 keys.mirror^=M;keys.fill^=1;keys.snap^=1;window.onresize=draw;setTimeout(draw,0);hist.i=-1;save();
 function decode(s){return[[...s.slice(0,2)],...s.slice(2).match(/.{1,6}/g)||[]] .map(a=>[...a].map(c=>c.charCodeAt()-107));}
-function encode(){return"https://bacionejs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...A.flat(Infinity).map(n => n + 107));}
+// function decode(s){return JSON.parse(s);}
+// function encode(){return"https://bacionejs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...A.flat(Infinity).map(n => n + 107));}
+// function encode(){return JSON.stringify(A);}
 // function encode(){return"http://127.0.0.1:8080/myapps/dev/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+String.fromCharCode(...A.flat(Infinity).map(n => n + 107));}
+function encode(){return"https://bacionejs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+JSON.stringify(A);}
 function grid(){ X.lineWidth=1/S; for(let i=-10;i<11;i++) X.strokeStyle=i?"#eee":"#ccc", X.beginPath(), X.moveTo(i,-10),X.lineTo(i,10), X.moveTo(-10,i),X.lineTo(10,i), X.stroke(); }
 function getpoint(x,y){let m=.6,b={i:-1,t:-1},c=(x1,y1,i,t)=>{let d=Math.hypot(x1-x,y1-y);d<m&&(m=d,b={i,t})};A.forEach((s,i)=>i?(c(s[4],s[5],i,0),c(s[0],s[1],i,1),c(s[2],s[3],i,2)):c(...s,0,0));return b;}
 function setpoint(x,y){let s=A[sel.i],i=sel.i?sel.t?sel.t*2-2:4:0;s[i]=x;s[i+1]=y;}
