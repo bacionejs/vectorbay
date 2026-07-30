@@ -34,6 +34,6 @@ function points(){A.forEach((s,i)=>{let [a,b]=A[i-1]?.slice(i==1?0:-2)||[],[c,d,
 function element(tag,p=document.body,c){let e=p.appendChild(document.createElement(tag));if(c)e.className=c;return e;}
 element("style").textContent=`
 *{margin:0;box-sizing:border-box;touch-action:none;user-select:none;} body{display:flex;} canvas{width:100dvmin;aspect-ratio:1;background:#fff;border:1px solid black;}
-.toolbar{display:flex;background:silver;} .keys{display:grid;place-items:center;border:1px solid black;width:10cqmin;aspect-ratio:1;} .keys:active{background:gray}
+.toolbar{display:flex;background:silver;} .keys{display:grid;place-items:center;border:1px solid black;width:9.09cqmin;aspect-ratio:1;} .keys:active{background:gray}
 @media(orientation:portrait ){body{flex-direction:column} .toolbar{flex-direction:row}} @media(orientation:landscape){body{flex-direction:row} .toolbar{flex-direction:column}}
 `;
