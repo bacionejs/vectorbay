@@ -37,4 +37,3 @@ element("style").textContent=`
 .toolbar{display:flex;background:silver;} .keys{display:grid;place-items:center;border:1px solid black;width:9.09cqmin;aspect-ratio:1;} .keys:active{background:gray}
 @media(orientation:portrait ){body{flex-direction:column} .toolbar{flex-direction:row}} @media(orientation:landscape){body{flex-direction:row} .toolbar{flex-direction:column}}
 `;
-
