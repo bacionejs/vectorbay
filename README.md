@@ -5,7 +5,7 @@
 
 ---
 
-👉[Try it](https://bacionijs.github.io/vectorbay)  
+👉[Try it](https://bacionejs.github.io/vectorbay)  
 
 ---
 
