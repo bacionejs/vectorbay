@@ -5,7 +5,7 @@ let toolbar=element("div",document.body,"toolbar"),C=element("canvas"),X=C.getCo
 C.onpointerdown=e=>{sel=getpoint(tx(e),ty(e));drag=sel.i>-1;draw();}; C.onpointerup=()=>{if(drag){drag=0;save();}};
 C.onpointermove=e=>{if(!drag)return;let x=tx(e),y=ty(e),g=keys.snap?1:10;x=round(x*g)/g;y=round(y*g)/g;x=max(-11,min(11,x));y=max(-11,min(11,y));setpoint(x,y);draw();}
 let keys=[
-{d:"M0 10 v-6 l5 -4 l5 4 v6 z",            f:function home(){window.open("https://github.com/bacionijs/vectorbay", "_blank")}},
+{d:"M0 10 v-6 l5 -4 l5 4 v6 z",            f:function home(){window.open("https://github.com/bacionejs/vectorbay", "_blank")}},
 {d:"M2 5 h6 M5 2 v6",                      f:function add(){A.splice(sel.i+1,0,[0,0,0,0,0,0]);sel={i:sel.i+1,t:0};save();}},
 {d:"M2 5 h6",                              f:function del(){A.splice(sel.i,1);sel={i:-1,t:-1};save();}},
 {d:"M10 5 Q5 0  0 7 m0 -4 v4 h4",          f:function undo(){A=JSON.parse(hist[--hist.i])}},
@@ -20,7 +20,7 @@ let keys=[
 keys.forEach(k=>{let e=element("div",toolbar,"keys");e.innerHTML=`<svg viewBox="-5 -5 20 20"><path d="${k.d}" fill=none stroke="currentColor"/></svg>`;e.onclick=()=>{k.f();draw();};e.ref=k;k.e=e;})
 keys.mirror^=M;keys.fill^=1;keys.snap^=1;window.onresize=draw;setTimeout(draw,0);hist.i=-1;save();
 function decode(s){return JSON.parse(s);}
-function encode(){return"https://bacionijs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+JSON.stringify(A);}
+function encode(){return"https://bacionejs.github.io/vectorbay?"+(!keys.mirror?"m=0&":"")+"p="+JSON.stringify(A);}
 function grid(){ X.lineWidth=1/S; for(let i=-11;i<12;i++) X.strokeStyle=i?"#eee":"#ccc", X.beginPath(), X.moveTo(i,-11),X.lineTo(i,11), X.moveTo(-11,i),X.lineTo(11,i), X.stroke(); }
 function getpoint(x,y){let m=.6,b={i:-1,t:-1},c=(x1,y1,i,t)=>{let d=hypot(x1-x,y1-y);d<m&&(m=d,b={i,t})};A.forEach((s,i)=>i?(c(s[4],s[5],i,0),c(s[0],s[1],i,1),c(s[2],s[3],i,2)):c(...s,0,0));return b;}
 function setpoint(x,y){let s=A[sel.i],i=sel.i?sel.t?sel.t*2-2:4:0;s[i]=x;s[i+1]=y;}
