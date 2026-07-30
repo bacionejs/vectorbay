@@ -11,9 +11,8 @@
 
 > [!WARNING]
 > Only supports a continuous path  
-
-Mirroring only makes sense with symmetrical shapes (spaceship)  
-Animation only makes sense with non-symmetical shapes (dolphin)  
+> Mirroring only makes sense with symmetrical shapes (spaceship)  
+> Basic sine animation only makes sense with non-symmetical legless/armless shapes (dolphin, fish, etc)  
 
 Draw your shape, click `copy` and paste the shape into your code.  
 Example code:
