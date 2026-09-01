@@ -1,12 +1,17 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width"><script>onload=()=>{
 let U=new URLSearchParams(location.search),M=U.get("m")||1,A=decode(U.get("p")||"[[0,-4],[1,-8,10,-5,0,4]]"); 
-let hist=[],sel={i:-1,t:-1},drag=0,t=0,Z=1,px=0,py=0,ptr=new Map(),d0=0;
+let hist=[],sel={i:-1,t:-1},drag=0,t=0,Z=1,px=0,py=0,ptr=new Map(),d0=0,cx0=0,cy0=0;
 let tx=e=>(e.offsetX-W/2-px)/(S*Z),ty=e=>(e.offsetY-H/2-py)/(S*Z),save=()=>{hist.splice(hist.i+1);hist.push(JSON.stringify(A));hist.i++;};
 let toolbar=element("div",document.body,"toolbar"),C=element("canvas"),X=C.getContext("2d"),W,H,S,{round,max,min,hypot,sin}=Math;
 C.onpointerdown=e=>{ptr.set(e.pointerId,e);if(ptr.size<2){sel=getpoint(tx(e),ty(e));drag=sel.i>-1;}draw();};
 C.onpointermove=e=>{
     if(!ptr.has(e.pointerId))return;let o=ptr.get(e.pointerId);ptr.set(e.pointerId,e);
-    if(ptr.size===2){let p=[...ptr.values()],d=hypot(p[0].clientX-p[1].clientX,p[0].clientY-p[1].clientY);if(d0)Z=max(.2,min(10,Z*(d/d0)));d0=d;}
+    if(ptr.size===2){
+        let p=[...ptr.values()],d=hypot(p[0].clientX-p[1].clientX,p[0].clientY-p[1].clientY);
+        let r=C.getBoundingClientRect(),cx=(p[0].clientX+p[1].clientX)/2-r.left-W/2,cy=(p[0].clientY+p[1].clientY)/2-r.top-H/2;
+        if(d0){let nZ=max(.2,min(10,Z*(d/d0))),k=nZ/Z;px=cx-(cx0-px)*k;py=cy-(cy0-py)*k;Z=nZ;}
+        d0=d;cx0=cx;cy0=cy;
+    }
     else if(drag){let x=tx(e),y=ty(e),g=keys.snap?1:10;x=round(x*g)/g;y=round(y*g)/g;x=max(-11,min(11,x));y=max(-11,min(11,y));setpoint(x,y);}
     else{px+=e.clientX-o.clientX;py+=e.clientY-o.clientY;}
     draw();
