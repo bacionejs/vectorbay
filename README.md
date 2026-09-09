@@ -1,19 +1,14 @@
 
-<img width="50%" src="https://github.com/user-attachments/assets/8e6112d6-afc8-497b-8a3f-69f08e6f1555" />
+<img width="40%" src="https://github.com/user-attachments/assets/92583eea-ef0c-4f5b-87b0-23e4c23e26c6" />
 
-<img width="50%" src="https://github.com/user-attachments/assets/fc1e0959-06d7-4086-8ef6-19f4a8d72187" />
 
----
+[Try it](https://bacionejs.github.io/vectorbay)  
 
-👉[Try it](https://bacionejs.github.io/vectorbay)  
 
----
-
-Entire app source code fits on a 3x5 card 🤯  
+Entire app source code fits on a 3x5 card   
 
 <a href="https://bacionejs.github.io/bacionejs/viewsource.html?b=1&file=https://raw.githubusercontent.com/bacionejs/vectorbay/main/index.html" target="_blank"><img width="200" src="https://github.com/user-attachments/assets/58975c52-14f3-4f2b-b807-94e8b1596acf" /></a>
 
----
 
 > [!WARNING]
 > Only supports a continuous path  
