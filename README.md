@@ -1,5 +1,5 @@
+<img width="100%" alt="app examples, legend" src="https://github.com/user-attachments/assets/6abf4b67-dd16-44c5-9510-8f8e6826b280" />
 
-<img width="40%" src="https://github.com/user-attachments/assets/92583eea-ef0c-4f5b-87b0-23e4c23e26c6" />
 
 
 [Try it](https://bacionejs.github.io/vectorbay)  
