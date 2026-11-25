@@ -5,7 +5,8 @@
 [Try it](https://bacionejs.github.io/vectorbay)  
 
 
-Entire app source-code fits on a 3x5 card   
+The source-code fits on a 3x5 card.  
+**No server. No external dependencies.**
 
 <a href="https://bacionejs.github.io/bacionejs/viewsource.html?b=1&file=https://raw.githubusercontent.com/bacionejs/vectorbay/main/index.html" target="_blank"><img width="200" src="https://github.com/user-attachments/assets/df6cc436-8ed3-462a-b731-2d68615b7a8e" /></a>
 
