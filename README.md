@@ -4,6 +4,8 @@
 
 **Only supports a continuous path**  
 
+Draw your shape, click `copy` and paste the shape into your code.  
+
 [Try it](https://bacionejs.github.io/vectorbay)  
 
 ---
@@ -17,7 +19,6 @@ The source-code fits on a 3x5 card.
 
 ---
 
-Draw your shape, click `copy` and paste the shape into your code.  
 Example code:
 ```html
 <canvas id="C"></canvas> <script> 
