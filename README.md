@@ -1,20 +1,21 @@
 <img width="100%" alt="app examples, legend" src="https://github.com/user-attachments/assets/6abf4b67-dd16-44c5-9510-8f8e6826b280" />
 
+---
 
+**Only supports a continuous path**  
 
 [Try it](https://bacionejs.github.io/vectorbay)  
 
+---
+
+**No server. No external dependencies.**  
 
 The source-code fits on a 3x5 card.  
-**No server. No external dependencies.**
 
 <a href="https://bacionejs.github.io/bacionejs/viewsource.html?b=1&file=https://raw.githubusercontent.com/bacionejs/vectorbay/main/index.html" target="_blank"><img width="200" src="https://github.com/user-attachments/assets/df6cc436-8ed3-462a-b731-2d68615b7a8e" /></a>
 
 
-> [!WARNING]
-> Only supports a continuous path  
-> Mirroring only makes sense with symmetrical shapes (spaceship)  
-> Basic sine animation only makes sense with non-symmetical legless/armless shapes (dolphin, fish, etc)  
+---
 
 Draw your shape, click `copy` and paste the shape into your code.  
 Example code:
